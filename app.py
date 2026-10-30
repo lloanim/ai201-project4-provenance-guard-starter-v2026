@@ -150,6 +150,9 @@ def health():
 
 # ── YOU BUILD THIS ────────────────────────────────────────────────────────────
 
+# Longest text /submit accepts. Anything bigger gets a 413 instead of tying up the model.
+MAX_TEXT_CHARS = 20_000
+
 @app.post("/submit")
 # @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
@@ -199,17 +202,55 @@ def submit():
     what should this do when `text` is missing, empty, or enormous? A crash on
     a malformed input is one of the most common real failures there is.
     """
-    payload = request.get_json(silent=True) or {}
 
-    # TODO: delete this and build the route.
+    #Step 2 - JSON goes in: pull text and creator_id out of the body
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        payload = {}
+    text = payload.get("text")
+    creator_id = payload.get("creator_id")
+    if not isinstance(creator_id, str) or not creator_id.strip():
+        creator_id = "unknown"
+
+    # Reject bad input BEFORE it reaches the model
+    if not isinstance(text, str) or not text.strip():
+        return jsonify({"error": "bad_request", "message": "Send JSON with a non-empty \"text\"."}), 400
+    if len(text) > MAX_TEXT_CHARS:
+        return jsonify({"error": "too_large", "message": f"\"text\" must be at most {MAX_TEXT_CHARS} characters."}), 413
+
+    # Step 3 - one real signal that we first tested from the terminal
+    # python detector.py "some text"
+    # (imported here, like /health does, so the model loads lazily)
+    import detector
+    model_score = detector.model_signal(text)
+
+    # Placeholders until Milestones 4 and 5
+    guess = "unsure"
+    label = "not built yet"
+
+    #Step 4 - log the decision. The content_id is what /appeal needs later
+    content_id = f"c_{uuid.uuid4().hex[:12]}"
+    audit.log_decision(
+        content_id=content_id,
+        creator_id=creator_id,
+        guess=guess,
+        model_score=model_score,
+        label=label,
+        status="decided",
+    )
+
+    #Step 1 - the route answers
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /submit isn't built yet — see the TODO in app.py.",
-        "you_sent": {
-            "text_length": len(payload.get("text", "")),
-            "creator_id": payload.get("creator_id"),
-        },
-    }), 501
+        "content_id": content_id,
+        "creator_id": creator_id,
+        "guess": guess,
+        "confidence": model_score,
+        "label": label,
+        "model_score": model_score,
+        "style_score": None,
+    }), 200
+
+ 
 
 
 @app.post("/appeal")
