@@ -127,14 +127,70 @@
      two off the response, so leaving them out costs you next unit's
      diagnostics. -->
 
+Clearly-Human Text:
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "...", "creator_id": "..."}'
+  -d '{"text": "I didn't sleep. Not properly, anyway — I lay there listening to the boiler tick and thinking about the thing I'd said to Marcus at the pub, which was stupid, and which he will absolutely bring up again. Twice now. So: coffee, and the long way round to work, and a plan. The plan lasted until about ten past nine, when Priya asked how the weekend was and I said \"fine\" in the voice that means it wasn't, and she put her mug down and looked at me. That's the trouble with Priya. She notices.", "creator_id": "u1"}'
 ```
 
 ```json
+{
+  "confidence": 0.4445,
+  "content_id": "c_9bcdad936cf7",
+  "creator_id": "u1",
+  "guess": "unsure",
+  "label": "not built yet",
+  "model_score": 0.4445,
+  "style_score": null
+}
+```
 
+```log entry
+{
+     "combined_score": null,
+     "content_id": "c_9bcdad936cf7",
+     "creator_id": "u1",
+     "guess": "unsure",
+     "label": "not built yet",
+     "model_score": 0.4445,
+     "status": "decided",
+     "style_score": null,
+     "timestamp": "2026-10-31T00:13:36+00:00"
+}
+```
+
+Clearly-AI Text:
+```bash
+$ curl -X POST http://127.0.0.1:5000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"text": "The importance of effective time management cannot be overstated in today's fast-paced work environment. Professionals who develop strong organizational habits are better positioned to meet deadlines and reduce stress. There are several key strategies that can help individuals improve their productivity. First, prioritization is essential. By identifying the most important tasks and addressing them first, workers can ensure that critical objectives are met. Second, minimizing distractions plays a significant role. Setting aside dedicated blocks of time for concentrated work is widely considered beneficial. Finally, regular breaks are important for maintaining performance.", "creator_id": "u2"}'
+```
+
+```json
+{
+  "confidence": 0.7544,
+  "content_id": "c_ebc51225b657",
+  "creator_id": "u2",
+  "guess": "unsure",
+  "label": "not built yet",
+  "model_score": 0.7544,
+  "style_score": null
+}
+```
+
+```log entry
+{
+     "combined_score": null,
+     "content_id": "c_ebc51225b657",
+     "creator_id": "u2",
+     "guess": "unsure",
+     "label": "not built yet",
+     "model_score": 0.7544,
+     "status": "decided",
+     "style_score": null,
+     "timestamp": "2026-10-31T00:23:10+00:00"
+}
 ```
 
 **An appeal**
