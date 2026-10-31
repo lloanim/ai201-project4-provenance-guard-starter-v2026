@@ -224,6 +224,14 @@ def submit():
     import detector
     model_score = detector.model_signal(text)
 
+    # Step 5 - second signal
+    import stylometry
+    style_score = stylometry.style_signal(text)
+
+    # Step 6 - combine
+    import scoring 
+    combined_score = scoring.combine_signals(model_score, style_score)
+
     # Placeholders until Milestones 4 and 5
     guess = "unsure"
     label = "not built yet"
@@ -235,6 +243,8 @@ def submit():
         creator_id=creator_id,
         guess=guess,
         model_score=model_score,
+        style_score=style_score,
+        combined_score=combined_score,
         label=label,
         status="decided",
     )
@@ -244,10 +254,10 @@ def submit():
         "content_id": content_id,
         "creator_id": creator_id,
         "guess": guess,
-        "confidence": model_score,
+        "confidence": combined_score,
         "label": label,
         "model_score": model_score,
-        "style_score": None,
+        "style_score": style_score,
     }), 200
 
  

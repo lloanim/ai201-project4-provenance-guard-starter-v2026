@@ -49,56 +49,84 @@ def words(text: str) -> list[str]:
 
 def sentence_length_spread(text: str) -> float:
     """
-    How much sentence length varies. ← TODO
+    How much sentence length varies. 
 
     Returns:
-        A float. Decide yourself what scale it's on and which direction means
-        "more human" — then write that down, because your combining rule
-        depends on knowing it.
-
-    A hint on what you're reaching for: the standard deviation of sentence
-    lengths, probably divided by the mean so a long text and a short one are
-    comparable. `statistics.stdev` is imported for you.
-
-    Watch the edge case: a one-sentence submission has no spread at all, and
-    `stdev` raises on fewer than two values. Decide what that should return
-    before the attack set decides for you.
+        stdev / mean of words-per-sentence (>= 0). 
+        Higher = more varied = more human-like
+        Fewer than 2 sentence -> 0.0 (no spread to measure)
     """
-    # TODO: replace this
-    return 0.0
+    text_sentences = sentences(text)
+    lengths = []
+
+    for s in text_sentences:
+        lengths.append(len(words(s)))
+
+    if len(lengths) < 2:
+        return 0.0
+
+    mean = statistics.mean(lengths)
+    if mean == 0:
+        return 0.0
+    
+    stdev = statistics.stdev(lengths)
+    
+    return stdev / mean
 
 
 def type_token_ratio(text: str) -> float:
     """
-    Unique words over total words. ← TODO
-
+    Unique words over total words. 
     Returns:
         A float between 0 and 1. Higher means more varied vocabulary.
+        Fewer than 2 sentences -> 0.0
 
     Worth knowing before you rely on it: this measure falls as text gets
     longer, because common words repeat. Two texts of different lengths aren't
     directly comparable on it, and if your test inputs vary a lot in length,
     that alone can look like a signal.
     """
-    # TODO: replace this
-    return 0.0
+    text_words = words(text)
+
+    if not text_words:
+        return 0.0
+
+    unique = set(text_words)
+
+    return len(unique) / len(text_words)
 
 
 def punctuation_density(text: str) -> float:
     """
-    How much punctuation, relative to length. ← TODO
+    How much punctuation, relative to length.
 
     Returns:
-        A float. Whether you count all punctuation or only some kinds — commas,
-        semicolons, dashes — is a real choice. Semicolons and em dashes are
-        more interesting than full stops, because they vary more between
-        writers.
+       Punctuation marks per word (>= 0). Counts commas, semicolons, 
+       colons, dashes, etc. Ignores full stops since nearly every 
+       sentence has one.
     """
-    # TODO: replace this
-    return 0.0
+    punct = ",;:—–-()!?\""
+    count = 0
+
+    text_words = words(text)
+    
+    if not text_words:
+        return 0.0
+
+    for ch in text:
+        if ch in punct:
+            count += 1
+    
+    return count / len(text_words)
 
 
 # ── Combining them ───────────────────────────────────────────────────────────
+
+def _scale(value: float, low: float, high: float) -> float:
+    """Map value onto 0-1 between low and high, clamped at the ends"""
+    if high == low:
+        return 0.0
+    return max(0.0, min(1.0, (value-low) / (high-low)))
 
 def style_signal(text: str) -> float:
     """
@@ -122,8 +150,11 @@ def style_signal(text: str) -> float:
     you trust it. Plain and ordinary, not formal: formal prose reads as *human*
     to signal one, and it is plain writing that gets accused.
     """
-    # TODO: replace this
-    return 0.5
+    spread = 1 - _scale(sentence_length_spread(text), 0.3, 1.0)
+    ttr = 1 - _scale(type_token_ratio(text), 0.4, 0.8)
+    punct = 1 - _scale(punctuation_density(text), 0.0, 0.15)
+    
+    return 0.45 * spread + 0.1 * ttr + 0.45 * punct
 
 
 if __name__ == "__main__":

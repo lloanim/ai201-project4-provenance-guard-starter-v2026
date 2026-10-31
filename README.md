@@ -79,8 +79,10 @@
      signals disagree? -->
 
 **The rule:**
+A weighted average of the two signals, weighted towards the model signal. The style signal can't read meaning and falsely flags plain human writing, so when the two disagree, the model signal decides more of the result.
 
 **The numbers:**
+0.7 * model_score + 0.3 * style_score
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -88,7 +90,7 @@
      somewhere else, say where. -->
 
 **A case where my two signals split, and what my rule does with it:**
-
+My plain human text (31 words, 3 sentences) got model 0.28 and style 0.66. A 50/50 average would give 0.47 (unsure). With 0.7/0.3 it scores 0.39, so the model signal's correct "human" reading counts for more. With the current thresholds (human below 0.35), it still lands in "unsure", but its further from the AI side. The rule reduces the false-accusation risk but it does not remove it.
 
 
 ---
@@ -131,7 +133,7 @@ Clearly-Human Text:
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "I didn't sleep. Not properly, anyway — I lay there listening to the boiler tick and thinking about the thing I'd said to Marcus at the pub, which was stupid, and which he will absolutely bring up again. Twice now. So: coffee, and the long way round to work, and a plan. The plan lasted until about ten past nine, when Priya asked how the weekend was and I said \"fine\" in the voice that means it wasn't, and she put her mug down and looked at me. That's the trouble with Priya. She notices.", "creator_id": "u1"}'
+  -d '{"text": "I didn'\''t sleep. Not properly, anyway — I lay there listening to the boiler tick and thinking about the thing I'\''d said to Marcus at the pub, which was stupid, and which he will absolutely bring up again. Twice now. So: coffee, and the long way round to work, and a plan. The plan lasted until about ten past nine, when Priya asked how the weekend was and I said \"fine\" in the voice that means it wasn'\''t, and she put her mug down and looked at me. That'\''s the trouble with Priya. She notices.", "creator_id": "u1"}'
 ```
 
 ```json
@@ -164,7 +166,7 @@ Clearly-AI Text:
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "The importance of effective time management cannot be overstated in today's fast-paced work environment. Professionals who develop strong organizational habits are better positioned to meet deadlines and reduce stress. There are several key strategies that can help individuals improve their productivity. First, prioritization is essential. By identifying the most important tasks and addressing them first, workers can ensure that critical objectives are met. Second, minimizing distractions plays a significant role. Setting aside dedicated blocks of time for concentrated work is widely considered beneficial. Finally, regular breaks are important for maintaining performance.", "creator_id": "u2"}'
+  -d '{"text": "The importance of effective time management cannot be overstated in today'\''s fast-paced work environment. Professionals who develop strong organizational habits are better positioned to meet deadlines and reduce stress. There are several key strategies that can help individuals improve their productivity. First, prioritization is essential. By identifying the most important tasks and addressing them first, workers can ensure that critical objectives are met. Second, minimizing distractions plays a significant role. Setting aside dedicated blocks of time for concentrated work is widely considered beneficial. Finally, regular breaks are important for maintaining performance.", "creator_id": "u2"}'
 ```
 
 ```json
