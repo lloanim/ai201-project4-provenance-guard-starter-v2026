@@ -1,28 +1,4 @@
 # Provenance Guard
-
-> ### 👋 Start here
->
-> **New to this repo? Read [RUNNING.md](RUNNING.md) first.**
->
-> Once `python test.py` passes, in one terminal:
->
-> ```bash
-> python app.py
-> ```
->
-> and in another:
->
-> ```bash
-> curl -X POST http://127.0.0.1:5000/ping \
->   -H "Content-Type: application/json" \
->   -d '{"message": "hello"}'
-> ```
->
-> That's a web service. Something sent it text and it sent something back.
-> Everything this unit is filling in the middle.
->
-> **The rest of this file is your submission.** Fill it in as you go.
-
 ---
 
 <!-- ─────────────────────────────────────────────────────────────────────────
@@ -38,7 +14,15 @@
 
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
+Provenance Guard is a service that estimates whether a piece of writing was produced by a human or by AI. A submission moves through these steps:
 
+1. **Submit** — A client sends plain-English text to the service as a JSON request.
+2. **Model signal** — A model scores the text based on its *meaning* (what it says).
+3. **Style signal** — A second scorer rates the text based on its *shape* (how it is written: sentence length, structure, word patterns).
+4. **Combine** — The two scores are merged into a single confidence number.
+5. **Label** — That number maps to one of three labels a reader sees: `high-confidence human`, `unsure`, or `high-confidence AI`.
+6. **Audit log** — Every decision is recorded with its `content_id`, both signal scores, the combined score, and the label, so it can be reviewed later.
+7. **Appeal** — If someone disagrees with a label, they submit the `content_id` along with their reasoning, and the content's status changes to `under_review`.
 
 
 ---
@@ -82,7 +66,7 @@
 A weighted average of the two signals, weighted towards the model signal. The style signal can't read meaning and falsely flags plain human writing, so when the two disagree, the model signal decides more of the result.
 
 **The numbers:**
-0.7 * model_score + 0.3 * style_score
+0.7 * model_score + 0.3 * style_score (weights set in `config.py` as `WEIGHT_MODEL_SIGNAL` and `WEIGHT_STYLE_SIGNAL`)
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -248,14 +232,22 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 **Moment 1**
 
 - *What I asked for:*
+     I asked AI if my understanding of endpoints was correct. I thought it meant specifically what is inserted (text) and what is output (scores).
 - *What came back:*
+     It explained that an endpoint is a specific URL route like `/submit` or `/appeal`, each with its own request and response fields.
 - *What I changed:*
+     I was able to adjust my notes to describe `/submit` and `/appeal` with detail on how each should response to each case on request, response, and error.
 
 **Moment 2**
 
 - *What I asked for:*
+     I asked AI to review my criteria and see if it can be used by another person.
+
 - *What came back:*
+     It gave feedback on what to improve on and which parts of my criteria another person might misunderstand. For example it had pointed out how my wording for one "Out of 5 of 5" reads awkwardly.
+
 - *What I changed:*
+     I reworded my criteria to be clearer, for example changing "Out of 5 of 5" to "For 5 out of 5". I also added specific numbers so another person could measure each criterion the same way. The biggest addition was requiring 3 trials, which I hadn't included originally.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
