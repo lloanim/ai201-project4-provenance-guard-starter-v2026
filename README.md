@@ -104,15 +104,17 @@ My plain human text (31 words, 3 sentences) got model 0.28 and style 0.66. A 50/
 
 | Label | Score range | The exact text a reader sees |
 |---|---|---|
-| high-confidence human |  |  |
-| unsure |  |  |
-| high-confidence AI |  |  |
+| high-confidence human | 0.0-0.35 | We think this was probably written by a person. |
+| unsure | 0.35-0.65 | We can't tell whether this was written by a person or by AI. |
+| high-confidence AI | 0.65-1.0 | We think this was probably written with AI. |
+
+**Note**: A score of exactly 0.35 counts as human and exactly 0.65 counts as AI.
 
 **Why I worded the "unsure" one this way:**
 <!-- It's the hardest of the three. It has to admit uncertainty without
      sounding like an accusation, because the person reading it may well have
      written every word themselves. -->
-
+I worded "unsure" to state plainly that the tool can't decide, and to make clear it isn't an accusation. Someone who wrote every word themselves might get thsi label. I do not want them to feel accused or think they need to prove anything.
 
 
 ---
@@ -150,15 +152,15 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 
 ```log entry
 {
-     "combined_score": null,
-     "content_id": "c_9bcdad936cf7",
-     "creator_id": "u1",
-     "guess": "unsure",
-     "label": "not built yet",
-     "model_score": 0.4445,
-     "status": "decided",
-     "style_score": null,
-     "timestamp": "2026-10-31T00:13:36+00:00"
+  "combined_score": null,
+  "content_id": "c_9bcdad936cf7",
+  "creator_id": "u1",
+  "guess": "unsure",
+  "label": "not built yet",
+  "model_score": 0.4445,
+  "status": "decided",
+  "style_score": null,
+  "timestamp": "2026-10-31T00:13:36+00:00"
 }
 ```
 
@@ -183,15 +185,15 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 
 ```log entry
 {
-     "combined_score": null,
-     "content_id": "c_ebc51225b657",
-     "creator_id": "u2",
-     "guess": "unsure",
-     "label": "not built yet",
-     "model_score": 0.7544,
-     "status": "decided",
-     "style_score": null,
-     "timestamp": "2026-10-31T00:23:10+00:00"
+  "combined_score": null,
+  "content_id": "c_ebc51225b657",
+  "creator_id": "u2",
+  "guess": "unsure",
+  "label": "not built yet",
+  "model_score": 0.7544,
+  "status": "decided",
+  "style_score": null,
+  "timestamp": "2026-10-31T00:23:10+00:00"
 }
 ```
 
@@ -200,11 +202,15 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 ```bash
 $ curl -X POST http://127.0.0.1:5000/appeal \
   -H "Content-Type: application/json" \
-  -d '{"content_id": "...", "reasoning": "..."}'
+  -d '{"content_id": "c_6c3ed9d8f66c", "reasoning": "I wrote this myself for my class."}'
 ```
 
 ```json
-
+{
+  "content_id": "c_6c3ed9d8f66c",
+  "message": "Thanks! Your appeal was received. A person will review this decision.",
+  "status": "under_review"
+}
 ```
 
 **What the log shows afterwards**
@@ -214,7 +220,25 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
-
+{
+  "combined_score": 0.40247553126204094,
+  "content_id": "c_6c3ed9d8f66c",
+  "creator_id": "label_testing_unsure",
+  "guess": "unsure",
+  "label": "We can't tell whether this was written by a person or by AI.",
+  "model_score": 0.3489,
+  "status": "decided",
+  "style_score": 0.5274851042068033,
+  "timestamp": "2026-10-31T05:48:16+00:00"
+},
+{
+  "content_id": "c_6c3ed9d8f66c",
+  "creator_id": "label_testing_unsure",
+  "event": "appeal",
+  "reasoning": "I wrote this myself for my class.",
+  "status": "under_review",
+  "timestamp": "2026-10-31T06:05:44+00:00"
+}
 ```
 
 ---
