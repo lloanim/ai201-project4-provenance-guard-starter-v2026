@@ -292,13 +292,58 @@ A caller counts as `creator_id`, falling back to IP address when no `creator_id`
 
 <!-- Choose entries that show the interesting failures, not the ten easiest. -->
 
+FP03 - 
 ```json
-
+{"timestamp": "2026-11-06T03:20:22+00:00", "content_id": "c_14f5bc0165e0", "creator_id": "attacker_FP03", "guess": "ai", "model_score": 0.8051, "style_score": 0.9011556863220549, "combined_score": 0.8339167058966165, "label": "We think this was probably written with AI.", "status": "decided"}
 ```
 
-**The single worst outcome** — the one I'd least want to explain to a writer
-whose work got caught by it:
+FP04 -
+```json
+{"timestamp": "2026-11-06T03:20:22+00:00", "content_id": "c_1521c2b1da7f", "creator_id": "attacker_FP04", "guess": "ai", "model_score": 0.8329, "style_score": 0.8130170251339222, "combined_score": 0.8269351075401765, "label": "We think this was probably written with AI.", "status": "decided"}
+```
 
+PI02 - 
+```json
+{"timestamp": "2026-11-06T03:20:23+00:00", "content_id": "c_4bed35c2c1c3", "creator_id": "attacker_PI02", "guess": "human", "model_score": 0.2044, "style_score": 0.5404870131267702, "combined_score": 0.30522610393803107, "label": "We think this was probably written by a person.", "status": "decided"}
+```
+
+EV01 - 
+```json
+{"timestamp": "2026-11-06T03:20:19+00:00", "content_id": "c_d7abfdbafa3d", "creator_id": "attacker_EV01", "guess": "human", "model_score": 0.1635, "style_score": 0.7588235294117647, "combined_score": 0.34209705882352937, "label": "We think this was probably written by a person.", "status": "decided"}
+```
+
+MF06 - 
+```json
+{"timestamp": "2026-11-06T03:20:26+00:00", "content_id": "c_d913255f629d", "creator_id": "attacker_MF06", "guess": "ai", "model_score": 0.9969, "style_score": 1.0, "combined_score": 0.99783, "label": "We think this was probably written with AI.", "status": "decided"}
+```
+
+MF02 (one character) - Crashed the service with a 500 and wrote nothing to the audit log. The detector raises on short text before `log_decision` is reached, so the failurer is not visible to anyone reviewing the log
+```json
+{"id": "MF02","status": 500,"content_id": null,"creator_id": "attacker_MF02","guess": null,"confidence": null,"model_score": null,"style_score": null,"label": null,"error": "response wasn't JSON: <!doctype html>\n<html lang=en>\n  <head>\n    <title>ValueError: Text is too short to score \u2014 a few sentences at least.\n // Werkzeug Debugger</title>\n    <link rel=\"stylesheet\" href=\"?__debugger__=yes&a","verdict": "BROKE"}
+```
+
+MF03 -
+```json
+{"timestamp": "2026-11-06T03:20:24+00:00", "content_id": "c_999ce2b9709e", "creator_id": "attacker_MF03", "guess": "human", "model_score": 0.0, "style_score": 0.9, "combined_score": 0.27, "label": "We think this was probably written by a person.", "status": "decided"}
+```
+
+MF04 - 
+```json
+{"timestamp": "2026-11-06T03:20:24+00:00", "content_id": "c_f4c0a38983d2", "creator_id": "attacker_MF04", "guess": "human", "model_score": 0.0112, "style_score": 1.0, "combined_score": 0.30784, "label": "We think this was probably written by a person.", "status": "decided"}
+```
+
+RQ06 - 
+```json
+{"timestamp": "2026-11-06T03:20:26+00:00", "content_id": "c_0fb097bf5363", "creator_id": "unknown", "guess": "human", "model_score": 0.0492, "style_score": 0.9, "combined_score": 0.30444000000000004, "label": "We think this was probably written by a person.", "status": "decided"}
+```
+
+FL01_06 -
+```json
+{"timestamp": "2026-11-06T03:20:26+00:00", "creator_id": "attacker_flood", "event": "rejected", "status": "rejected", "reason": "rate_limited", "limit": "5 per 1 minute"}
+```
+
+**The single worst outcome** 
+Would be FP03 a false-positive where a non-native English speaker's writing gets flagged as AI. The goal of the system is to catch work that is actually AI as AI not real people's work. 
 
 
 ---
