@@ -255,7 +255,7 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** _5__ per minute, _50_ per day
 
 **Why those numbers and not others:**
 <!-- Think about two people: a real writer submitting their own work a few
@@ -263,15 +263,19 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
      thresholds. Your numbers have to be liveable for the first and hostile to
      the second. -->
 
-**What a caller counts as:** <!-- per address, or per creator_id? They fail
-differently — one script can look like a thousand callers, and one household
-can look like one. -->
+A writer submits occasionally, maybe a few drafts in a row after making edits. A limit of 5 per minute lets them recheck quickly without pausing, and 50 per day is far more than someone writing their own work would realistically need. A script would try to fire many variations, at 5/minute it can't brust and at 50/day sending 1,000 variations would take longer to accomplish. It would also make it easier to spot in the audit log. 
+
+**What a caller counts as:** <!-- per address, or per creator_id? They fail differently — one script can look like a thousand callers, and one household can look like one. -->
+A caller counts as `creator_id`, falling back to IP address when no `creator_id` is sent. This allows real users, writers sharing a network in a household or library, to each get their own limit. However, there is a weakness where a script can rotate fake IDs and look like a thousand different callers to bypass the limit. 
+
 
 **The run of status codes when I pushed past it:**
 
 <!-- python run_attacks.py --flood 15 -->
 
 ```
+
+200 200 200 200 200 429 429 429 429 429 429 429 429 429 429
 
 ```
 

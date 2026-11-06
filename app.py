@@ -154,7 +154,7 @@ def health():
 MAX_TEXT_CHARS = 20_000
 
 @app.post("/submit")
-# @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
+@limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
     """
     Take a piece of text, decide about it, log the decision, answer.
@@ -214,8 +214,10 @@ def submit():
 
     # Reject bad input BEFORE it reaches the model
     if not isinstance(text, str) or not text.strip():
+        audit.log_rejection(creator_id=creator_id, reason="missing_text")
         return jsonify({"error": "bad_request", "message": "Send JSON with a non-empty \"text\"."}), 400
     if len(text) > MAX_TEXT_CHARS:
+        audit.log_rejection(creator_id=creator_id, reason="too_large", length=len(text))
         return jsonify({"error": "too_large", "message": f"\"text\" must be at most {MAX_TEXT_CHARS} characters."}), 413
 
     # Step 3 - one real signal that we first tested from the terminal
@@ -289,8 +291,10 @@ def appeal():
     reasoning = payload.get("reasoning")
 
     if not isinstance(content_id, str) or not content_id.strip():
+        audit.log_rejection(creator_id=creator_id, reason="missing_content_id")
         return jsonify({"error": "bad_request", "message": "Send JSON with a \"content_id\"."}), 400
     if not isinstance(reasoning, str) or not reasoning.strip():
+        audit.log_rejection(creator_id=creator_id, reason="missing_reasoning")
         return jsonify({"error": "bad_request", "message": "Send JSON with your \"reasoning\"."}), 400
 
     # Step 1 - check the content_id actually exists
