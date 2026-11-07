@@ -249,6 +249,17 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 - *What I changed:*
      I reworded my criteria to be clearer, for example changing "Out of 5 of 5" to "For 5 out of 5". I also added specific numbers so another person could measure each criterion the same way. The biggest addition was requiring 3 trials, which I hadn't included originally.
 
+**Moment 3**
+
+- *What I asked for:*
+     I asked Claude to explain more about the Rate Limiting section of the README, specifically the part that says "What a caller counts as."
+
+- *What came back:*
+     Claude gave a clearer explanation of both options and their limitations. `creator_id` can easily be faked with scripts, while limiting by IP address can block multiple people who share the same IP address, especially because the service is rate-limited per minute and per day.
+
+- *What I changed:*
+     I decided that a caller counts as a `creator_id`, and that the IP address is used when no `creator_id` is provided.
+
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
 ---
@@ -1017,14 +1028,24 @@ It helped stop my own work from being labelled as AI, but it did not get it labe
 
 <!-- For each attack still getting through and each criterion still missed:
      what you'd do, and why you stopped. -->
+**False positives (FP03–FP06):** Writing by a non-native English speaker, a student essay written to a rubric, technical documentation and a formal template were all labelled AI (combined 0.82–0.84). Both signals read careful, formal writing as AI: model_score was 0.80–0.88 and style_score was 0.73–0.90. Fixing signal two alone would only move these to unsure, since even a style_score of 0 leaves them at 0.56–0.62. What I'd do is rebuild signal two so it doesn't penalize even sentence lengths and light punctuation, and lower the weight on signal one. I stopped because lowering both risks letting the evasion attacks through, and testing that trade properly needs a larger set of formal human writing than I had.
 
+**Evasion (EV01, EV05, EV08):** AI text with typos, a heavy human edit, or text shorter than the token window was labelled human. Typos and short text both push the scores down. What I'd do is refuse to score text below a minimum length and return unsure instead. A human edit is harder to catch, and arguably the text really is partly human. I stopped because a length cutoff also affects short real submissions like FP08.
+
+**Prompt injection (PI02):** An instruction disguised as a system message came back human (0.305). The audit log was clean and the label text wasn't changed, so the injection didn't control the service. The text just scored low. I'd look at whether text formatted like system messages scores low on signal one in general. I stopped here because the service never follows instructions in the text, so this is the same kind of miss as the evasion attacks rather than a separate security hole.
+
+**Malformed input (MF02–MF07):** A single character crashed the service with a 500 error. Control characters and punctuation-only text were labelled human, and a single very long word, emoji-only text and right-to-left script were labelled AI with 0.93–0.998 confidence. What I'd do is catch the "too short" error and return a 400, and reject text that has too few real words before scoring it. I stopped because these are input checks rather than detection problems, and the project says to fix one diagnosis.
+
+**Criterion 2 (score spread 0.205, target ≥ 0.30):** The style signal barely separates human from AI text, and changing the thresholds can't fix that. I'd redesign signal two or replace it with a signal that measures something different. I stopped because that is a new signal, not a tuning change.
+
+**Criterion 3 (label coverage 2/3):** After I raised the thresholds, nothing reached the AI label. I'd add clearly AI-generated texts to the test set to check whether 0.80 is reachable at all, and lower `AI_THRESHOLD` if it isn't. I stopped because lowering it would bring back the false positives on my own writing that Criterion 1 fixed.
 
 
 **The trade I'd make if this ran for real:**
 
 <!-- Two sentences. Fewer wrong accusations means more AI text getting through.
      Say which way you'd go and WHO PAYS FOR IT. -->
-
+The trade I'd make if this ran for real is make fewer wrong accusations, even if that means more AI-written texts gets through. The people who pay for it are readers and teachers that rely on the label, because more AI texts will come back as unsure or human instead of being flagged. 
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
