@@ -255,7 +255,7 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 
 ## Rate Limiting
 
-**My limits:** _5__ per minute, _50_ per day
+**My limits:** _5_ per minute, _50_ per day
 
 **Why those numbers and not others:**
 <!-- Think about two people: a real writer submitting their own work a few
@@ -675,7 +675,14 @@ Criterion 5 - produced by `run_eval.py::main` (calls `app.py::submit`), output f
 
      Look for a pattern. Five failures on one signal is one problem, not five. -->
 
+**Criterion 1 (my writing as AI: 5 of 10, target ≤ 1)**:
+Signal one, made worse by signal two. I used formal writing from my past school essays where five of them were flagged as AI, and the rest were labelled unsure. On the five flagged essays, model_score ranged from 0.62 to 0.87, a lean toward AI. This most likely happened because I used formal phrases like "Overall" and "In conclusion," and the model signal reads that kind of predictable wording as AI. Signal two (style_score) ranged from 0.63 to 0.88 because the essays used few commas and dashes, and the sentences were fairly even in length. That is how plain writing looks, not just AI writing. With weights of 0.7 and 0.3, both signals pushed the same way, so all five went over 0.65. This shows the issue with scoring formal writing where both signals are wrong at once. 
 
+**Criterion 2 (score spread: 0.205, target ≥ 0.30)**:
+Signal two was the bigger issue. The average score for human text was 0.531, and for AI text it was 0.736. The model signal separates the groups somewhat (about 0.52 vs. 0.76), but the style signal hardly does. Casual human texts scored from 0.61 to 0.69 on style_score, and AI texts scored from 0.60 to 0.80, so the two groups overlap almost completely. Signal two flags text with little punctuation and even sentence lengths, and casual human writing has both. As a result, it adds about the same amount to both groups and takes up 30% of the score without separating them. 
+
+**Criterion 3 (label coverage: 2/3, "human" never reached)**:
+Signal two combined with the label mapping. To be labelled "human," the combined score has to be ≤ 0.35. Normal text gets a style_score of about 0.5 or higher, which adds at least 0.15 to the combined score. That means model_score would have to be under about 0.3, and none of my human test texts got that low. The closest one scored 0.35 (model) and 0.53 (style), for a combined 0.40, and was still "unsure". My human threshold sits below where real human text actually lands. 
 
 ---
 
