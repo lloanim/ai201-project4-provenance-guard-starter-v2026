@@ -289,6 +289,8 @@ def appeal():
         payload = {}
     content_id = payload.get("content_id")
     reasoning = payload.get("reasoning")
+    creator_id = payload.get("creator_id") or "unknown"
+
 
     if not isinstance(content_id, str) or not content_id.strip():
         audit.log_rejection(creator_id=creator_id, reason="missing_content_id")
