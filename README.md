@@ -360,10 +360,9 @@ Would be FP03 a false-positive where a non-native English speaker's writing gets
 | 4. audit log | 5/5 appeals, 3/3 error named | 5/5, 3/3 | 5/5, 3/3 | 5/5, 3/3 | MET |
 | 5. bad input | 3/3 |  3/3  |  3/3  |  3/3  | MET |
 
-**Real output from one trial**, pasted as text, naming the file and function
-that produced it:
+**Real output from one trial**
 
-Criterion 1 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run 2026-11-07_0946_before.md
+Criterion 1 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_0946_before.md
 ```json
 [
   {
@@ -459,7 +458,7 @@ Criterion 1 - produced by `run_eval.py::main` (calls `app.py::submit`), output f
 ]
 ```
 
-Criterion 2 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run 2026-11-07_0946_before.md
+Criterion 2 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_0946_before.md
 ```json
 [
   {
@@ -555,7 +554,7 @@ Criterion 2 - produced by `run_eval.py::main` (calls `app.py::submit`), output f
 ]
 ```
 
-Criterion 3 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run 2026-11-07_0946_before.md
+Criterion 3 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_0946_before.md
 ```json
 [
   {
@@ -626,7 +625,7 @@ Criterion 4 - produced by `test_appeals.py` (calls `app.py::appeal`), output fro
 {"timestamp": "2026-11-07T04:07:21+00:00", "content_id": "c_384f713424bf", "creator_id": "appeal_test_4", "event": "appeal", "status": "under_review", "reasoning": "I wrote this myself."}
 ```
 
-Criterion 5 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run 2026-11-07_0946_before.md
+Criterion 5 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_0946_before.md
 ```json
 [
   {
@@ -689,21 +688,328 @@ Signal two combined with the label mapping. To be labelled "human," the combined
 ## The Improvement
 
 **What I changed:**
+I changed the label mapping. `AI_THRESHOLD` went from 0.65 → 0.80, and `HUMAN_THRESHOLD` went from 0.35 → 0.45, which moves the "unsure" band up.
 
 **Which diagnosis pointed at it:**
+Criterion 1: My formal essays had model_scores of 0.62–0.87, and with style also high they landed over 0.65. Raising the AI cutoff to 0.80 means only text both signals strongly agree on gets called AI. 
+Criterion 3: "human" required ≤ 0.35, but style_score alone adds about 0.15 to normal text, so real human writing (my closest was 0.40) couldn't get there. Raising the human cutoff to 0.45 puts it where human text actually lands. 
+It does not change Criterion 2, because the spread comes from the signals themselves and moving thresholds doesn't change the scores.
 
 ### Attack Run — After
 
 <!-- Same format. `run_attacks.py --label after` -->
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. my own writing flagged as AI | ≤ 1 of 10 | 0/10  | 0/10  | 0/10 | MET |
+| 2. score spread | AI avg - Human avg ≥ 0.30  |  0.205 | 0.205  |  0.205 | MISSED |
+| 3. label coverage | 3/3 | 2/3  | 2/3  | 2/3  | MISSED |
+| 4. audit log | 5/5 appeals, 3/3 error named | 5/5, 3/3 | 5/5, 3/3 | 5/5, 3/3 | MET |
+| 5. bad input | 3/3 |  3/3  |  3/3  |  3/3  | MET |
 
+**Real output from one trial**
 
+Criterion 1 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_1301_after.md
+```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.797309872481369,
+    "model_score": 0.869,
+    "style_score": 0.6300329082712302,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Last year 2019 in Washington state 35 people contracted measles and mo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7765160194516272,
+    "model_score": 0.8093,
+    "style_score": 0.7000200648387573,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Overall, despite the fact that some believe that not all children shou"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7869482191780821,
+    "model_score": 0.7702,
+    "style_score": 0.8260273972602741,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Before the printing press, it would take a long time to produce one bo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7051529411764705,
+    "model_score": 0.6415,
+    "style_score": 0.8536764705882354,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "In document five, shows Martin Luther nailing his 95 theses to the doo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6167797690974837,
+    "model_score": 0.5085,
+    "style_score": 0.8694325636582794,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Martin Luther uses the method of the printing press to try to solve th"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6999761009715384,
+    "model_score": 0.6243,
+    "style_score": 0.876553669905128,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "In conclusion, the enduring issue impact of innovation impacted the li"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6210175409836065,
+    "model_score": 0.5141,
+    "style_score": 0.8704918032786886,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "In the age of exploration, Europeans sailed around the world to find n"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.43634013845423747,
+    "model_score": 0.253,
+    "style_score": 0.8641337948474583,
+    "label": "We think this was probably written by a person.",
+    "sent": "Christine counters the works of literature of males by telling the sto"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5444911111111111,
+    "model_score": 0.4334,
+    "style_score": 0.8037037037037038,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "However, More recalls the story of a land called Utopia because of its"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.49980194029850744,
+    "model_score": 0.3817,
+    "style_score": 0.7753731343283583,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "In our modern society, we have grown to change many aspects that the p"
+  }
+]
+```
+
+Criterion 2 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_1301_after.md
+```json
+[
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.34577765957446804,
+    "model_score": 0.4445,
+    "style_score": 0.11542553191489362,
+    "label": "We think this was probably written by a person.",
+    "sent": "I didn't sleep. Not properly, anyway \u2014 I lay there listening to the bo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5982266696609897,
+    "model_score": 0.5639,
+    "style_score": 0.678322232203299,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Today was a great day for some warm coffee and a good book. I sat by t"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.549015704000342,
+    "model_score": 0.5233,
+    "style_score": 0.6090190133344735,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "I had soccer practice yesterday and now my legs hurt. I want to go out"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5875662190211302,
+    "model_score": 0.5455,
+    "style_score": 0.6857207300704338,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "I am sooo mad! I went to 5 different stores today in the city, to find"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5744240211965413,
+    "model_score": 0.5336,
+    "style_score": 0.669680070655138,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "My dog ate my homework... I did not think this would actually happend "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7057199543913879,
+    "model_score": 0.7235,
+    "style_score": 0.6642331813046264,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "The importance of effective time management cannot be overstated in to"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7688087640449438,
+    "model_score": 0.8426,
+    "style_score": 0.5966292134831461,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Artificial intelligence is rapidly transforming the landscape of moder"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.8688846511627907,
+    "model_score": 0.9004,
+    "style_score": 0.7953488372093024,
+    "label": "We think this was probably written with AI.",
+    "sent": "Climate change represents one of the most pressing challenges facing h"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6691930120481927,
+    "model_score": 0.6942,
+    "style_score": 0.6108433734939759,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Effective communication is a cornerstone of successful teamwork. When "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6676784415584415,
+    "model_score": 0.6516,
+    "style_score": 0.7051948051948052,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Reading offers numerous benefits that extend far beyond entertainment."
+  }
+]
+```
+
+Criterion 3 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_1301_after.md
+```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7869482191780821,
+    "model_score": 0.7702,
+    "style_score": 0.8260273972602741,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Before the printing press, it would take a long time to produce one bo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5949179384914562,
+    "model_score": 0.5813,
+    "style_score": 0.6266931283048541,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "Time management matters a lot in todays fast-paced work environment. P"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5477184935853328,
+    "model_score": 0.4907,
+    "style_score": 0.6807616452844426,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "sent": "My grandma taught me how to make tamales every December. We'd spend th"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.40247553126204094,
+    "model_score": 0.3489,
+    "style_score": 0.5274851042068033,
+    "label": "We think this was probably written by a person.",
+    "sent": "Time management matters more than people admit, especially now that wo"
+  }
+]
+```
+
+Criterion 4 - produced by `test_appeals.py` (calls `app.py::appeal`), output from results/test_appeals_after.md and logs/audit.jsonl
+```
+== Part 1: 5 appeals on real content_ids ==
+[PASS] c_79456503e95c  appeal=200  log statuses=['decided', 'under_review']
+[PASS] c_fcb96145d5ef  appeal=200  log statuses=['decided', 'under_review']
+[PASS] c_b21e471b5894  appeal=200  log statuses=['decided', 'under_review']
+[PASS] c_ab92249b5dda  appeal=200  log statuses=['decided', 'under_review']
+[PASS] c_ae4084b3c48c  appeal=200  log statuses=['decided', 'under_review']
+5/5 passed
+
+== Part 2: 3 appeals on a fake content_id ==
+[PASS] status=404  body={'error': 'not_found', 'message': "No submission found with content_id 'c_doesnotexist0'."}
+[PASS] status=404  body={'error': 'not_found', 'message': "No submission found with content_id 'c_doesnotexist1'."}
+[PASS] status=404  body={'error': 'not_found', 'message': "No submission found with content_id 'c_doesnotexist2'."}
+3/3 passed
+```
+```json
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_79456503e95c", "creator_id": "appeal_test_0", "guess": "human", "model_score": 0.047, "style_score": 0.4889411613870045, "combined_score": 0.17958234841610132, "label": "We think this was probably written by a person.", "status": "decided"}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_79456503e95c", "creator_id": "appeal_test_0", "event": "appeal", "status": "under_review", "reasoning": "I wrote this myself."}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_fcb96145d5ef", "creator_id": "appeal_test_1", "guess": "human", "model_score": 0.0547, "style_score": 0.4889411613870045, "combined_score": 0.18497234841610133, "label": "We think this was probably written by a person.", "status": "decided"}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_fcb96145d5ef", "creator_id": "appeal_test_1", "event": "appeal", "status": "under_review", "reasoning": "I wrote this myself."}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_b21e471b5894", "creator_id": "appeal_test_2", "guess": "human", "model_score": 0.054, "style_score": 0.4889411613870045, "combined_score": 0.18448234841610134, "label": "We think this was probably written by a person.", "status": "decided"}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_b21e471b5894", "creator_id": "appeal_test_2", "event": "appeal", "status": "under_review", "reasoning": "I wrote this myself."}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_ab92249b5dda", "creator_id": "appeal_test_3", "guess": "human", "model_score": 0.0506, "style_score": 0.4889411613870045, "combined_score": 0.18210234841610135, "label": "We think this was probably written by a person.", "status": "decided"}
+{"timestamp": "2026-11-07T18:22:05+00:00", "content_id": "c_ab92249b5dda", "creator_id": "appeal_test_3", "event": "appeal", "status": "under_review", "reasoning": "I wrote this myself."}
+{"timestamp": "2026-11-07T18:22:06+00:00", "content_id": "c_ae4084b3c48c", "creator_id": "appeal_test_4", "guess": "human", "model_score": 0.0479, "style_score": 0.4889411613870045, "combined_score": 0.18021234841610134, "label": "We think this was probably written by a person.", "status": "decided"}
+{"timestamp": "2026-11-07T18:22:06+00:00", "content_id": "c_ae4084b3c48c", "creator_id": "appeal_test_4", "event": "appeal", "status": "under_review", "reasoning": "I wrote this myself."}
+```
+
+Criterion 5 - produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-07_1301_after.md
+```json
+[
+  {
+    "status": 400,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "sent": "{\"creator_id\": \"eval_bad_missing\"}"
+  },
+  {
+    "status": 400,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "sent": "(empty text)"
+  },
+  {
+    "status": 413,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "sent": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+]
+```
 
 **Did it help, and how do I know:**
 
 <!-- Widening the unsure band usually fixes one problem and creates another.
      Reporting that trade honestly is worth full credit. -->
 
-
+It helped stop my own work from being labelled as AI, but it did not get it labelled as human. Only one of the texts was labelled human. The rest were labelled unsure, which is honestly better than having a real person's work labelled as AI. Changing the thresholds does not help with Criterion 2, because that depends on how well the signals separate human from AI text, not on where the thresholds are. Criterion 3 still fails because none of the four texts was ever labelled AI. One reason for this may be that I did not include a text that is clearly AI in the test. Either way, it shows the downside of changing the thresholds: there are more unsure labels, and the service is not really telling whether the text is human or AI.
 
 ---
 
