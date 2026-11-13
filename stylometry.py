@@ -33,6 +33,8 @@ anything together:
 import re
 import statistics
 
+import config
+
 
 def sentences(text: str) -> list[str]:
     """Split into sentences. Rough and good enough — given to you."""
@@ -150,11 +152,15 @@ def style_signal(text: str) -> float:
     you trust it. Plain and ordinary, not formal: formal prose reads as *human*
     to signal one, and it is plain writing that gets accused.
     """
-    spread = 1 - _scale(sentence_length_spread(text), 0.3, 1.0)
-    ttr = 1 - _scale(type_token_ratio(text), 0.4, 0.8)
-    punct = 1 - _scale(punctuation_density(text), 0.0, 0.15)
-    
-    return 0.45 * spread + 0.1 * ttr + 0.45 * punct
+    spread = 1 - _scale(sentence_length_spread(text), *config.STYLE_SPREAD_RANGE)
+    ttr = 1 - _scale(type_token_ratio(text), *config.STYLE_TTR_RANGE)
+    punct = 1 - _scale(punctuation_density(text), *config.STYLE_PUNCT_RANGE)
+
+    return (
+        config.STYLE_WEIGHT_SPREAD * spread
+        + config.STYLE_WEIGHT_TTR * ttr
+        + config.STYLE_WEIGHT_PUNCT * punct
+    )
 
 
 if __name__ == "__main__":

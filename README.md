@@ -1,15 +1,6 @@
 # Provenance Guard
 ---
 
-<!-- ─────────────────────────────────────────────────────────────────────────
-     Unit 7 asks for the first five sections. Unit 8 adds the five below.
-
-     Everything is pasted as TEXT. A pasted curl response gets full credit;
-     a picture of your terminal gets none.
-     ───────────────────────────────────────────────────────────────────────── -->
-
-<!-- ═══════════════════════ UNIT 7 — THE BUILD ═══════════════════════ -->
-
 ## What This Does
 
 <!-- The path a submission takes, from arriving to the label a reader sees.
@@ -24,6 +15,13 @@ Provenance Guard is a service that estimates whether a piece of writing was prod
 6. **Audit log** — Every decision is recorded with its `content_id`, both signal scores, the combined score, and the label, so it can be reviewed later.
 7. **Appeal** — If someone disagrees with a label, they submit the `content_id` along with their reasoning, and the content's status changes to `under_review`.
 
+## The Shape
+For the capstone, I chose **Shape C: extending one existing capability**, plus **Path B** for logging. My system wrongly accuses careful, formal human writers. Formal test samples FP03–FP06 are labeled AI, and my own essays clear the AI line by only 0.003. To fix that, I'm adding a **formal-register check** to the existing `scoring.py` flow. The check flags text as formal when it has transition phrases like "furthermore" and "it is important to," few contractions, and no first-person or casual words. Both signals still run exactly as they do now. When the text is flagged formal, a `high-confidence AI` label is capped at `unsure`, and the response says why. The cost is that formal AI text gets capped too, so I'll rerun `run_eval.py` and `run_attacks.py` before and after and report how many real AI texts drop from AI to unsure. For Path B, each decision's log entry will record latency, tokens, memory, outcome, and a new `formal_flag` field.
+
+**Out of Scope:**
+- **I'm not rebuilding either signal.** The model signal and the style signal keep the structure and measures they have now. The formal check sits on top of them.
+- **I'm not retuning the signal weights or the label thresholds.** The fix comes from the formal-register cap, not from moving numbers until the tests pass. (I did move the style ranges and weights out of `stylometry.py` into `config.py` so they're easier to see, but their values didn't change.)
+- **I'm not adding a third scoring signal.** The formal check can only lower a label to `unsure`. It never adds to the AI score.
 
 ---
 
@@ -98,7 +96,7 @@ My plain human text (31 words, 3 sentences) got model 0.28 and style 0.66. A 50/
 <!-- It's the hardest of the three. It has to admit uncertainty without
      sounding like an accusation, because the person reading it may well have
      written every word themselves. -->
-I worded "unsure" to state plainly that the tool can't decide, and to make clear it isn't an accusation. Someone who wrote every word themselves might get thsi label. I do not want them to feel accused or think they need to prove anything.
+I worded "unsure" to state plainly that the tool can't decide, and to make clear it isn't an accusation. Someone who wrote every word themselves might get this label. I do not want them to feel accused or think they need to prove anything.
 
 
 ---

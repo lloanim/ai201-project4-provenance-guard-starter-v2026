@@ -57,6 +57,21 @@ DETECTOR_MAX_TOKENS = 400
 WEIGHT_MODEL_SIGNAL = 0.7
 WEIGHT_STYLE_SIGNAL = 0.3
 
+# ─── Style signal internals (stylometry.style_signal) ────────────────────────
+# Each raw measure is scaled onto 0–1 between (low, high), clamped at the ends,
+# then flipped so higher = more AI-like. Values at or below `low` count as fully
+# AI-like; values at or above `high` count as fully human-like.
+
+STYLE_SPREAD_RANGE = (0.3, 1.0)   # sentence_length_spread (stdev / mean)
+STYLE_TTR_RANGE = (0.4, 0.8)      # type_token_ratio (unique / total words)
+STYLE_PUNCT_RANGE = (0.0, 0.15)   # punctuation_density (marks per word)
+
+# How much each measure counts inside the style signal. Should sum to 1.0.
+# TTR is weighted low because it falls with text length, not authorship.
+STYLE_WEIGHT_SPREAD = 0.45
+STYLE_WEIGHT_TTR = 0.10
+STYLE_WEIGHT_PUNCT = 0.45
+
 
 # ─── Thresholds (Milestone 5) ────────────────────────────────────────────────
 # Where one label becomes another. Scores run 0.0 (confidently human) to 1.0
