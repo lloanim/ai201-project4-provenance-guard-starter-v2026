@@ -72,6 +72,8 @@ STYLE_WEIGHT_SPREAD = 0.45
 STYLE_WEIGHT_TTR = 0.10
 STYLE_WEIGHT_PUNCT = 0.45
 
+# ––– Formal-register check (capstone) ––––––––––––––––––––––––––––––––––––––––
+FORMAL_MAX_CONTRACTION_RATE = 0.01
 
 # ─── Thresholds (Milestone 5) ────────────────────────────────────────────────
 # Where one label becomes another. Scores run 0.0 (confidently human) to 1.0
