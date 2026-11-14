@@ -15,13 +15,6 @@ Provenance Guard is a service that estimates whether a piece of writing was prod
 6. **Audit log** — Every decision is recorded with its `content_id`, both signal scores, the combined score, and the label, so it can be reviewed later.
 7. **Appeal** — If someone disagrees with a label, they submit the `content_id` along with their reasoning, and the content's status changes to `under_review`.
 
-## The Shape
-For the capstone, I chose **Shape C: extending one existing capability**, plus **Path B** for logging. My system wrongly accuses careful, formal human writers. Formal test samples FP03–FP06 are labeled AI, and my own essays clear the AI line by only 0.003. To fix that, I'm adding a **formal-register check** to the existing `scoring.py` flow. The check flags text as formal when it has transition phrases like "furthermore" and "it is important to," few contractions, and no first-person or casual words. Both signals still run exactly as they do now. When the text is flagged formal, a `high-confidence AI` label is capped at `unsure`, and the response says why. The cost is that formal AI text gets capped too, so I'll rerun `run_eval.py` and `run_attacks.py` before and after and report how many real AI texts drop from AI to unsure. For Path B, each decision's log entry will record latency, tokens, memory, outcome, and a new `formal_flag` field.
-
-**Out of Scope:**
-- **I'm not rebuilding either signal.** The model signal and the style signal keep the structure and measures they have now. The formal check sits on top of them.
-- **I'm not retuning the signal weights or the label thresholds.** The fix comes from the formal-register cap, not from moving numbers until the tests pass. (I did move the style ranges and weights out of `stylometry.py` into `config.py` so they're easier to see, but their values didn't change.)
-- **I'm not adding a third scoring signal.** The formal check can only lower a label to `unsure`. It never adds to the AI score.
 
 ---
 
@@ -1045,6 +1038,39 @@ It helped stop my own work from being labelled as AI, but it did not get it labe
      Say which way you'd go and WHO PAYS FOR IT. -->
 The trade I'd make if this ran for real is make fewer wrong accusations, even if that means more AI-written texts gets through. The people who pay for it are readers and teachers that rely on the label, because more AI texts will come back as unsure or human instead of being flagged. 
 
+
+## Capstone
+
+**What This Extends**:
+
+
+**The Shape**:
+I chose **Shape C: extending one existing capability**, plus **Path B** for logging. I'm extending the first problem in What's Still Broken: careful, formal human writing (FP03–FP06) gets labeled AI. Instead of changing the scores, I'm adding a formal-writing check (`formality.py`) that recognizes formal writing (almost no contractions and no casual words like "gonna" or "lol") and tells the user about it in `/submit`. If the text is labeled `high-confidence AI`, the response says it reads as formal writing, which the detector can't judge well, so the writer can appeal. If it's labeled `unsure`, the response says it reads as formal writing and the detector can't determine it well. A `human` label gets no message. For Path B, each decision's log entry records latency, tokens, memory, outcome and a new `formal` field, so the log shows how often the check fires.
+
+*Out of Scope*:
+- **I'm not rebuilding either signal.** The model signal and the style signal stay as they are. The formal check sits next to them.
+- **I'm not retuning the weights or thresholds.** My essays and AI samples overlap in score, so moving the lines would trade one error for another.
+- **The formal check doesn't change any score or label.** It only adds a message. It isn't an AI detector, since formal AI text gets flagged too.
+
+**Running It**:
+
+
+**Instrumentation**:
+
+
+**What It Costs**:
+
+
+**Run Log and Verdicts**:
+
+
+**The Improvement**:
+
+
+**What's Still Broken**:
+
+
+**How I Used AI**:
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
