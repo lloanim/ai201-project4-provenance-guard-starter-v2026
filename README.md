@@ -1125,6 +1125,647 @@ For this project there is no API used, so instead the cost is seconds of local c
 
 **Run Log and Verdicts**:
 
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. my own writing | ≤ 1 of 10 | 0/10 | 0/10 | 0/10 | MET |
+| 2. formal human pieces | ≥ 9 of 10 | 7/10 | 7/10 | 7/10 | MISSED |
+| 3. casual human pieces | ≤ 1 of 10 | 4/10  | 4/10  | 4/10  | MISSED |
+| 4. log matches /submit output | 10 of 10 | 10/10 | 10/10 | 10/10 | MET |
+| 5. bad input | 4/4 | 4/4 | 4/4 | 4/4  | MET |
+
+Criterion 1: produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-14_1804_before.md
+
+Trial 1 -
+
+```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.797309872481369,
+    "model_score": 0.869,
+    "style_score": 0.6300329082712302,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_feb4cdd2fd60",
+    "error": null,
+    "message": null,
+    "sent": "Last year 2019 in Washington state 35 people contracted measles and mo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7765160194516272,
+    "model_score": 0.8093,
+    "style_score": 0.7000200648387573,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_fa63ea835186",
+    "error": null,
+    "message": null,
+    "sent": "Overall, despite the fact that some believe that not all children shou"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7869482191780821,
+    "model_score": 0.7702,
+    "style_score": 0.8260273972602741,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_48201ae880b8",
+    "error": null,
+    "message": null,
+    "sent": "Before the printing press, it would take a long time to produce one bo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7051529411764705,
+    "model_score": 0.6415,
+    "style_score": 0.8536764705882354,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_3b46c140db1a",
+    "error": null,
+    "message": null,
+    "sent": "In document five, shows Martin Luther nailing his 95 theses to the doo"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6167797690974837,
+    "model_score": 0.5085,
+    "style_score": 0.8694325636582794,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_94a12acbd26b",
+    "error": null,
+    "message": null,
+    "sent": "Martin Luther uses the method of the printing press to try to solve th"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6999761009715384,
+    "model_score": 0.6243,
+    "style_score": 0.876553669905128,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_42d9369308ff",
+    "error": null,
+    "message": null,
+    "sent": "In conclusion, the enduring issue impact of innovation impacted the li"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6210175409836065,
+    "model_score": 0.5141,
+    "style_score": 0.8704918032786886,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_405d355e5cae",
+    "error": null,
+    "message": null,
+    "sent": "In the age of exploration, Europeans sailed around the world to find n"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.43634013845423747,
+    "model_score": 0.253,
+    "style_score": 0.8641337948474583,
+    "label": "We think this was probably written by a person.",
+    "formal": true,
+    "content_id": "c_e46b31245482",
+    "error": null,
+    "message": null,
+    "sent": "Christine counters the works of literature of males by telling the sto"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5444911111111111,
+    "model_score": 0.4334,
+    "style_score": 0.8037037037037038,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_00f6c67b02fe",
+    "error": null,
+    "message": null,
+    "sent": "However, More recalls the story of a land called Utopia because of its"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.49980194029850744,
+    "model_score": 0.3817,
+    "style_score": 0.7753731343283583,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_842de33c0d3e",
+    "error": null,
+    "message": null,
+    "sent": "In our modern society, we have grown to change many aspects that the p"
+  }
+]
+```
+
+Criterion 2: produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-14_1804_before.md
+
+Trial 1 -
+
+```json
+[
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.817836931017996,
+    "model_score": 0.845,
+    "style_score": 0.7544564367266536,
+    "label": "We think this was probably written with AI.",
+    "formal": true,
+    "content_id": "c_e4c9ab60e8e3",
+    "error": null,
+    "message": null,
+    "sent": "In conclusion, we experimented to find the most efficient method to co"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.599470233910819,
+    "model_score": 0.6515,
+    "style_score": 0.47806744636939674,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_0ffb1fe1aaed",
+    "error": null,
+    "message": null,
+    "sent": "Global warming is damaging the Earth in various ways. Global warming i"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5396334042553191,
+    "model_score": 0.4013,
+    "style_score": 0.8624113475177305,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_7683595d938f",
+    "error": null,
+    "message": null,
+    "sent": "Sterne\u2019s amazement to the environment of New York City caused her art "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5441669029493188,
+    "model_score": 0.5758,
+    "style_score": 0.4703563431643961,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_cb7c7af7ac3c",
+    "error": null,
+    "message": null,
+    "sent": "However, the truth of the matter is that the practical benefits of spa"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.4792466666666666,
+    "model_score": 0.4644,
+    "style_score": 0.5138888888888888,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_8ff717fa4346",
+    "error": null,
+    "message": null,
+    "sent": "It is safe, however, to state that animals have yet to exhibit a quali"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.4781235084603048,
+    "model_score": 0.4017,
+    "style_score": 0.6564450282010161,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_dbe0786d7afa",
+    "error": null,
+    "message": null,
+    "sent": "This case study surrounding the Risque Internet Service Company violat"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5914467857142857,
+    "model_score": 0.5256,
+    "style_score": 0.7450892857142857,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_5c5ddc10a0ed",
+    "error": null,
+    "message": null,
+    "sent": "Responsibility falls on the government to act towards overcoming the c"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5774666355140187,
+    "model_score": 0.4857,
+    "style_score": 0.7915887850467289,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_dd5819ad9a1b",
+    "error": null,
+    "message": null,
+    "sent": "The origins of immigrant\u2019s impact on the upbringing of American societ"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5345224770642202,
+    "model_score": 0.4465,
+    "style_score": 0.739908256880734,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_0946fcea6834",
+    "error": null,
+    "message": null,
+    "sent": "A peek at the future through the artwork \u201cHello America\u201d by Alice Tye "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5579955519095777,
+    "model_score": 0.6107,
+    "style_score": 0.43501850636525907,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_0ab500f1576b",
+    "error": null,
+    "message": null,
+    "sent": "The theme of social criticism is visible through the works of Christin"
+  }
+]
+```
+
+Criterion 3: produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-14_1804_before.md
+
+Trial 1 -
+
+```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.538500483346463,
+    "model_score": 0.4506,
+    "style_score": 0.7436016111548769,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_9369bf07bb06",
+    "error": null,
+    "message": null,
+    "sent": "I had a test yesterday and it was brutal. Two days ago I was none stop"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.38733521067456234,
+    "model_score": 0.2682,
+    "style_score": 0.6653173689152079,
+    "label": "We think this was probably written by a person.",
+    "formal": false,
+    "content_id": "c_f5f27c7a9e46",
+    "error": null,
+    "message": null,
+    "sent": "You know I heard there is a new coffee shop that opened down the stree"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6677804694754733,
+    "model_score": 0.6965,
+    "style_score": 0.6007682315849112,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_58f65ce54aa5",
+    "error": null,
+    "message": null,
+    "sent": "I am sooo excited! The next best movie is just a month away! I have be"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6686616601998454,
+    "model_score": 0.6599,
+    "style_score": 0.6891055339994845,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_a213c300f890",
+    "error": null,
+    "message": null,
+    "sent": "Today's commute to work was rough. Let me tell you why. When I arrived"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.3495012940844858,
+    "model_score": 0.2655,
+    "style_score": 0.5455043136149529,
+    "label": "We think this was probably written by a person.",
+    "formal": false,
+    "content_id": "c_5fc231d85890",
+    "error": null,
+    "message": null,
+    "sent": "There as so many different fur coat cats! My favorite has to be the to"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7419273684210526,
+    "model_score": 0.7614,
+    "style_score": 0.6964912280701755,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_f20c52143349",
+    "error": null,
+    "message": null,
+    "sent": "I went to Trader Joe's today and I went at a good time because there w"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6851841204969044,
+    "model_score": 0.6224,
+    "style_score": 0.831680401656348,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_fcf2f365fde4",
+    "error": null,
+    "message": null,
+    "sent": "Plans for today are ruined for the kids. Last night rain poured down a"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.7919488888888888,
+    "model_score": 0.7383,
+    "style_score": 0.9171296296296296,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_94b686c0430f",
+    "error": null,
+    "message": null,
+    "sent": "My computer was heating up real bad last night, when I was working on "
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.8053499999999998,
+    "model_score": 0.7505,
+    "style_score": 0.9333333333333333,
+    "label": "We think this was probably written with AI.",
+    "formal": true,
+    "content_id": "c_1b547db3945e",
+    "error": null,
+    "message": null,
+    "sent": "The most funny thing happened today. I was in a rush to leave home tod"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.8232910526315789,
+    "model_score": 0.7766,
+    "style_score": 0.9322368421052631,
+    "label": "We think this was probably written with AI.",
+    "formal": false,
+    "content_id": "c_ab3f53ca28cf",
+    "error": null,
+    "message": null,
+    "sent": "Today was the first time I ever went on a rollercoaster. It was not be"
+  }
+]
+```
+
+Criterion 4: produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-14_1804_before.md & logs/audit.jsonl
+
+Trial 1 - /submit response
+
+```json
+[
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.817836931017996,
+    "model_score": 0.845,
+    "style_score": 0.7544564367266536,
+    "label": "We think this was probably written with AI.",
+    "formal": true,
+    "content_id": "c_83dc3ad1500a",
+    "error": null,
+    "message": null,
+    "sent": "In conclusion, we experimented to find the most efficient method to co"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.599470233910819,
+    "model_score": 0.6515,
+    "style_score": 0.47806744636939674,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_a4a818f2d5de",
+    "error": null,
+    "message": null,
+    "sent": "Global warming is damaging the Earth in various ways. Global warming i"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5396334042553191,
+    "model_score": 0.4013,
+    "style_score": 0.8624113475177305,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_5092fe2eda1f",
+    "error": null,
+    "message": null,
+    "sent": "Sterne\u2019s amazement to the environment of New York City caused her art "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5441669029493188,
+    "model_score": 0.5758,
+    "style_score": 0.4703563431643961,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_320d87e1e441",
+    "error": null,
+    "message": null,
+    "sent": "However, the truth of the matter is that the practical benefits of spa"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.4792466666666666,
+    "model_score": 0.4644,
+    "style_score": 0.5138888888888888,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": true,
+    "content_id": "c_c4c3131624d1",
+    "error": null,
+    "message": null,
+    "sent": "It is safe, however, to state that animals have yet to exhibit a quali"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.538500483346463,
+    "model_score": 0.4506,
+    "style_score": 0.7436016111548769,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_deef1b5f04d5",
+    "error": null,
+    "message": null,
+    "sent": "I had a test yesterday and it was brutal. Two days ago I was none stop"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.38733521067456234,
+    "model_score": 0.2682,
+    "style_score": 0.6653173689152079,
+    "label": "We think this was probably written by a person.",
+    "formal": false,
+    "content_id": "c_17eb026d58fe",
+    "error": null,
+    "message": null,
+    "sent": "You know I heard there is a new coffee shop that opened down the stree"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6677804694754733,
+    "model_score": 0.6965,
+    "style_score": 0.6007682315849112,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_cd5f2f3defb5",
+    "error": null,
+    "message": null,
+    "sent": "I am sooo excited! The next best movie is just a month away! I have be"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.6686616601998454,
+    "model_score": 0.6599,
+    "style_score": 0.6891055339994845,
+    "label": "We can't tell whether this was written by a person or by AI.",
+    "formal": false,
+    "content_id": "c_b283e4d9264e",
+    "error": null,
+    "message": null,
+    "sent": "Today's commute to work was rough. Let me tell you why. When I arrived"
+  },
+  {
+    "status": 200,
+    "guess": "human",
+    "confidence": 0.3495012940844858,
+    "model_score": 0.2655,
+    "style_score": 0.5455043136149529,
+    "label": "We think this was probably written by a person.",
+    "formal": false,
+    "content_id": "c_c3e5c46c8fff",
+    "error": null,
+    "message": null,
+    "sent": "There as so many different fur coat cats! My favorite has to be the to"
+  }
+]
+```
+
+Trial 1 - matching lines from logs/audit.jsonl (same content_ids)
+
+```jsonl
+{"timestamp": "2026-11-14T23:04:12+00:00", "content_id": "c_83dc3ad1500a", "creator_id": "eval_log matches _1", "guess": "ai", "model_score": 0.845, "style_score": 0.7544564367266536, "combined_score": 0.817836931017996, "label": "We think this was probably written with AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks have trouble judging. If you wrote it yourself, you can appeal.", "text_len": 644, "text_preview": "In conclusion, we experimented to find the most efficient method to cook popcorn", "seconds": 0.748, "model_seconds": 0.747}
+{"timestamp": "2026-11-14T23:04:12+00:00", "content_id": "c_a4a818f2d5de", "creator_id": "eval_log matches _2", "guess": "unsure", "model_score": 0.6515, "style_score": 0.47806744636939674, "combined_score": 0.599470233910819, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 701, "text_preview": "Global warming is damaging the Earth in various ways. Global warming is the incr", "seconds": 0.34, "model_seconds": 0.339}
+{"timestamp": "2026-11-14T23:04:12+00:00", "content_id": "c_5092fe2eda1f", "creator_id": "eval_log matches _3", "guess": "unsure", "model_score": 0.4013, "style_score": 0.8624113475177305, "combined_score": 0.5396334042553191, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": false, "caution": "", "text_len": 742, "text_preview": "Sterne’s amazement to the environment of New York City caused her art to begin t", "seconds": 0.332, "model_seconds": 0.331}
+{"timestamp": "2026-11-14T23:04:13+00:00", "content_id": "c_320d87e1e441", "creator_id": "eval_log matches _4", "guess": "unsure", "model_score": 0.5758, "style_score": 0.4703563431643961, "combined_score": 0.5441669029493188, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": false, "caution": "", "text_len": 707, "text_preview": "However, the truth of the matter is that the practical benefits of space travel ", "seconds": 0.256, "model_seconds": 0.256}
+{"timestamp": "2026-11-14T23:04:13+00:00", "content_id": "c_c4c3131624d1", "creator_id": "eval_log matches _5", "guess": "unsure", "model_score": 0.4644, "style_score": 0.5138888888888888, "combined_score": 0.4792466666666666, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 557, "text_preview": "It is safe, however, to state that animals have yet to exhibit a quality or sust", "seconds": 0.211, "model_seconds": 0.21}
+{"timestamp": "2026-11-14T23:04:13+00:00", "content_id": "c_deef1b5f04d5", "creator_id": "eval_log matches _6", "guess": "unsure", "model_score": 0.4506, "style_score": 0.7436016111548769, "combined_score": 0.538500483346463, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": false, "caution": "", "text_len": 221, "text_preview": "I had a test yesterday and it was brutal. Two days ago I was none stop studying ", "seconds": 0.144, "model_seconds": 0.144}
+{"timestamp": "2026-11-14T23:04:13+00:00", "content_id": "c_17eb026d58fe", "creator_id": "eval_log matches _7", "guess": "human", "model_score": 0.2682, "style_score": 0.6653173689152079, "combined_score": 0.38733521067456234, "label": "We think this was probably written by a person.", "status": "decided", "formal": false, "caution": "", "text_len": 256, "text_preview": "You know I heard there is a new coffee shop that opened down the street. I heard", "seconds": 0.158, "model_seconds": 0.157}
+{"timestamp": "2026-11-14T23:04:13+00:00", "content_id": "c_cd5f2f3defb5", "creator_id": "eval_log matches _8", "guess": "unsure", "model_score": 0.6965, "style_score": 0.6007682315849112, "combined_score": 0.6677804694754733, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": false, "caution": "", "text_len": 231, "text_preview": "I am sooo excited! The next best movie is just a month away! I have been countin", "seconds": 0.124, "model_seconds": 0.124}
+{"timestamp": "2026-11-14T23:04:14+00:00", "content_id": "c_b283e4d9264e", "creator_id": "eval_log matches _9", "guess": "unsure", "model_score": 0.6599, "style_score": 0.6891055339994845, "combined_score": 0.6686616601998454, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": false, "caution": "", "text_len": 410, "text_preview": "Today's commute to work was rough. Let me tell you why. When I arrived at my car", "seconds": 0.173, "model_seconds": 0.173}
+{"timestamp": "2026-11-14T23:04:14+00:00", "content_id": "c_c3e5c46c8fff", "creator_id": "eval_log matches _10", "guess": "human", "model_score": 0.2655, "style_score": 0.5455043136149529, "combined_score": 0.3495012940844858, "label": "We think this was probably written by a person.", "status": "decided", "formal": false, "caution": "", "text_len": 259, "text_preview": "There as so many different fur coat cats! My favorite has to be the torishell ca", "seconds": 0.158, "model_seconds": 0.157}
+```
+
+Criterion 5: produced by `run_eval.py::main` (calls `app.py::submit`), output from results/run_2026-11-14_1804_before.md
+
+Trial 1 -
+
+```json
+[
+  {
+    "status": 400,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "formal": null,
+    "content_id": null,
+    "error": "bad_request",
+    "message": "Send JSON with a non-empty \"text\".",
+    "sent": "{\"creator_id\": \"eval_bad_missing\"}"
+  },
+  {
+    "status": 400,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "formal": null,
+    "content_id": null,
+    "error": "bad_request",
+    "message": "Send JSON with a non-empty \"text\".",
+    "sent": "(empty text)"
+  },
+  {
+    "status": 413,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "formal": null,
+    "content_id": null,
+    "error": "too_large",
+    "message": "\"text\" must be at most 20000 characters.",
+    "sent": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "status": 400,
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "formal": null,
+    "content_id": null,
+    "error": "too_short",
+    "message": "\"text\" must be at least 50 characters.",
+    "sent": "aaa"
+  }
+]
+```
+
+
 
 **The Improvement**:
 
