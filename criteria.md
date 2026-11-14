@@ -42,62 +42,51 @@ Two things worth knowing before you pick numbers:
   a **miss**.
 
 ---
-## 1. Of 10 pieces I wrote myself, at most 1 is labelled high-confidence AI, in each of 3 trials
+## 1. Of 10 pieces I wrote myself in scenarios.py, at most 1 is labelled high-confidence AI, in each of 3 trials
 
 <!-- Your criterion. It must name a number. -->
 
 
 
 **Why this target:**
-I chose 10 so there is more chance to see how reliable the system is in scoring the human text as not AI. A wrong accusation is worse than missing an AI text because it costs more falsly accussing a person's hard work. I let one to be labelled as AI because there can be a case where the text is written with predictable words and structured formally without using AI.
+I chose 10 so there is more chance to see how reliable the system is in scoring the human text as not AI. A wrong accusation is worse than missing an AI text because it costs more falsely accusing a person's hard work. I let one to be labelled as AI because there can be a case where the text is written with predictable words and structured formally without using AI.
 
 
 ---
 
-## 2. Across 5 clearly-AI and 5 clearly-human texts, the average combined score of the AI texts is at least 0.30 higher than the average for the human texts, in each of 3 trials. 
+## 2. Of the 10 formal human pieces in scenarios.py, at least 9 return formal: true from /submit, in each of 3 trials
+
+**Why this target:**
+The formal caution exists to protect careful human writers, who the detector is most likely to wrongly call AI. Every miss means one of those writers sees an AI or unsure label with no explanation and no nudge to appeal. That's why I don't go looser than 9 of 10. I don't demand 10 of 10 because the check is strict by design: it allows at most 1% contractions (FORMAL_MAX_CONTRACTION_RATE = 0.01), and one "!" or ALL-CAPS word marks the whole piece casual. A real formal essay can still have one contraction or one emphatic word, so expecting a perfect score would mean expecting human writers to be perfectly consistent.
+
+---
+
+## 3. Of the 10 casual human pieces in scenarios.py, at most 1 returns formal: true from /submit, in each of 3 trials
+
+**Why this target:**
+If casual writing gets flagged as formal, the caution stops meaning anything, and readers learn to ignore it, including the formal writers it's meant for. I allow 1 because the check looks for casual signals (contractions, slang like "gonna" or "lol", "!", stretched letters, ALL-CAPS). A short casual piece can happen to avoid all of them and still read as casual to a person. More than 1 in 10 would mean the rules are missing common casual writing, not a rare edge case.
+
+---
+
+## 4. In 10 out of 10 submissions, the formal flag in logs/audit.jsonl matches what /submit returns, in each of 3 trials
+
+<!-- Your criterion. -->
+
+
+**Why this target:**
+The audit log is the record someone checks when a writer appeals. If the log says formal: false but the writer was shown the formal caution, the reviewer is judging from a different picture than the writer saw, and the writer's appeal is weakened by the system's own records. I don't allow any misses, because nothing random is involved here: /submit writes the same is_formal value to both the log and the response. 
+
+
+---
+
+## 5. Missing text, empty text, text over 20,000 characters, and text under 50 characters each return an error status (400 or 413, never 500) with a message that names the problem. Tested 3 times each.
 
 <!-- Your criterion. -->
 
 
 
 **Why this target:**
-If the averages are less than 0.30 apart, AI and human text could both land inside the "unsure" band, and the system would not be able tell them apart. I expect the distance to above the minimum which would mean that the system is working reliably. The average combined score is the calculated score from what the text recieves from the model signal (perplexity) and style (shape of the text). The 0.30 is the width of the "unsure" band (0.65 - 0.35). Where a text is AI if its 0.65 or higher and human if its 0.35 or lower. 
-
-
----
-
-## 3. Using the inputs in scenarios.py each of the three labels (high-confidence human, unsure, and high-confidence AI) is returned at least once, in each of 3 trials
-
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-The system should be able to reach all three labels weather its "high-confidence human", "unsure", or "high-confidence AI". Especially "unsure" where it should label texts that falls between that threshold (0.35 - 0.65) and say that it was not able to determine if its AI or not. Its better that the system gives this as an answer than immediately claim that the work is AI especially if its actually human writen. 
-
-
----
-
-## 4. For 5 out of 5 appeals on real content_ids, the status changes from decided to under_review and the appeal shows up in the audit log for that content_id. An appeal with a content_id that does not exist returns an error naming the problem, never a 500, in 3 out of 3 tries
-
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-An appeal is the only way a falsely accused writer can push back, so it should work 100% of the time. The status should change so the user can see their content is under review, and the appeal should be recordded in the audit log so there is a history of what happend. With a content_id that does not exist, the system should not crash but return a clear error, so the user knows the ID may be wrong. 
-
-
----
-
-## 5. Missing text, empty text, and text over 20,000 characters each return an error status (400 or 413, never 500) with a message that names the problem. Tested 3 times each.
-
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-A 500 means the server crashed and tells the user nothing. A 400 or 413 with a message naming the problem shows the system caught the bad input on purpose, and tells the user exactly what to fix. 20,000 characters is the service's limit, so oversized text is rejected instead of trying up the model. 
+A 500 means the server crashed and tells the user nothing. A 400 or 413 with a message naming the problem shows the system caught the bad input on purpose, and tells the user exactly what to fix. 20,000 characters is the service's limit, so oversized text is rejected instead of tying up the model. Text under 50 characters is too short for the model and style signals to judge, so any score it got would be meaningless and could still put a label on a writer.
 
 
 ---
