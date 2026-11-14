@@ -1,277 +1,187 @@
 # Running Provenance Guard
 
-Everything about how the starter works.
+Provenance Guard is a small web service that guesses whether a piece of text
+was written by a person or with AI, explains its guess in plain language, and
+lets the writer appeal. It runs entirely on your own machine: **no API key, no
+account, nothing sent to a hosted service.**
 
-This is a **web service**. It runs on your machine and you talk to it with
-`curl` from another terminal. If you've not built a backend before, that's
-assumed — the starter ships one that already answers.
+You start the service in one terminal and talk to it with `curl` from another.
 
 ---
 
-## Before your first class
+## What you need
+
+- **Python 3.11, 3.12 or 3.13** (not 3.14 — `torch` doesn't support it yet)
+- About **1.5 GB of free disk** (the libraries plus a ~550 MB language model)
+- Two terminal windows
+
+---
+
+## Setup (once)
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python test.py
+python detector.py                 # downloads the model (~550 MB) and scores a sample
+python test.py                     # checks the environment
 ```
 
-**You're ready when `python test.py` passes.**
-
-You'll see `[WARN] Detector model — not downloaded yet`:
-
-```bash
-python detector.py
-```
-
-That downloads about 550 MB and scores a sample.
-
-> **No API key for this pair.** Nothing here calls a hosted service. The model
-> that reads your text runs on your own laptop.
+You're ready when `python test.py` passes with no `[WARN] Detector model` line.
 
 ---
 
-## Your first five minutes
+## Run it
 
-Two terminals. In the first:
+**Terminal 1** — start the service and leave it running:
 
 ```bash
+source .venv/bin/activate
 python app.py
 ```
 
-In the second:
+It listens on `http://127.0.0.1:5000`.
+
+**Terminal 2** — check it's up:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/ping \
-  -H "Content-Type: application/json" \
-  -d '{"message": "hello"}'
+curl http://127.0.0.1:5000/health
 ```
 
-You should get JSON back. That's the whole idea of a web service — something
-sent it data, it sent something back.
+### Submit some text
 
-> **On Windows, use `curl.exe` and keep it on one line.**
->
-> In PowerShell, `curl` is an alias for a different tool and the command above
-> fails with `Cannot bind parameter 'Headers'` before it ever reaches your
-> service. The `\` line breaks don't work there either. This does:
+```bash
+curl -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" -d '{"text": "Can'\''t believe the bus was late again. Third time this week, honestly.", "creator_id": "me"}'
+```
+
+You get back something like:
+
+```json
+{
+  "caution": "",
+  "confidence": 0.40507,
+  "content_id": "c_21390fb882c3",
+  "creator_id": "me",
+  "formal": false,
+  "guess": "human",
+  "label": "We think this was probably written by a person.",
+  "model_score": 0.3001,
+  "style_score": 0.65
+}
+```
+
+- `guess` is `human`, `unsure` or `ai`; `label` is the sentence shown to the writer.
+- `model_score` (how predictable the text is to a language model) and
+  `style_score` (sentence-length spread, vocabulary, punctuation) are combined
+  70/30 into `confidence`. Below 0.45 reads as human, above 0.80 as AI, and
+  anything between is "unsure".
+- `formal` / `caution` flag careful, formal writing, which these checks are bad
+  at judging, so the writer knows to appeal if the guess is wrong.
+
+**The first submission takes 10–20 seconds** while the model loads into memory.
+After that, each one takes about 0.1–0.4 s.
+
+Text must be **50 to 20,000 characters**. Anything else is rejected (`400` or
+`413`) and the rejection is logged.
+
+### Appeal a decision
+
+Use the `content_id` from a submit:
+
+```bash
+curl -X POST http://127.0.0.1:5000/appeal 
+  -H "Content-Type: application/json" 
+  -d '{"content_id": "c_0ccb5996d0d6", "reasoning": "I wrote this myself."}'
+```
+
+The decision moves to `under_review`. An unknown `content_id` returns `404`.
+
+### Read the audit log
+
+```bash
+curl "http://127.0.0.1:5000/log?limit=10"
+```
+
+Every decision, appeal and rejection is also written to `logs/audit.jsonl`,
+one JSON object per line.
+
+> **On Windows PowerShell, use `curl.exe` and keep the command on one line**,
+> escaping the inner quotes:
 >
 > ```powershell
-> curl.exe -X POST http://127.0.0.1:5000/ping -H "Content-Type: application/json" -d '{\"message\": \"hello\"}'
+> curl.exe -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" -d '{\"text\": \"...at least fifty characters of text here...\", \"creator_id\": \"me\"}'
 > ```
 >
-> Every `curl` command in this file and in the brief works the same way: swap
-> `curl` for `curl.exe` and put it on one line. Git Bash needs no change.
-
-**Leave `/ping` alone.** It's your control. When something breaks later, check
-`/ping` still answers: if it does, the problem is in your handler; if it
-doesn't, it's the service itself, and that's a help-channel question.
-
-Then try the route you're going to build:
-
-```bash
-curl -X POST http://127.0.0.1:5000/submit \
-  -H "Content-Type: application/json" \
-  -d '{"text": "some writing", "creator_id": "me"}'
-```
-
-It returns a `501` saying it isn't built yet. **That's the correct starting
-position.**
+> In PowerShell plain `curl` is a different tool. Git Bash needs no change.
 
 ---
 
 ## The routes
 
-| Route | State | What it does |
-|---|---|---|
-| `POST /ping` | **works** | The example. Don't edit it |
-| `GET /health` | **works** | Is the service up, is the model loaded |
-| `GET /log` | **works** | The audit log, as JSON |
-| `POST /submit` | **you build it** | Milestones 3, 4, 5 |
-| `POST /appeal` | **you build it** | Milestone 5 |
-
----
-
-## Every command
-
-| Command | What it does |
+| Route | What it does |
 |---|---|
-| `python test.py` | Checks your environment |
-| `python app.py` | Runs the service |
-| `python detector.py` | Downloads the model and scores a sample — **run before class** |
-| `python detector.py "some text"` | Score one piece of text from the terminal |
-| `python stylometry.py "some text"` | Your style measures, on one piece of text |
-| `python run_attacks.py --set <folder>` | The attack set — **unit 8** |
-| `python run_attacks.py --flood 15` | Push past your rate limit and print the status codes — **unit 8** |
-| `python run_eval.py --label before` | Your five criteria, three trials — **unit 8** |
+| `POST /submit` | Score a piece of text, return a guess and label, log it |
+| `POST /appeal` | Contest a decision by `content_id`; moves it to `under_review` |
+| `GET /log` | The audit log as JSON (`?limit=N`) |
+| `GET /health` | Is the service up, is the model loaded, is rate limiting on |
+| `POST /ping` | Echo test — if this answers, the service itself is fine |
 
 ---
 
-## Which piece goes with which milestone
+## Rate limiting
 
-### Unit 7 — the build
+`/submit` allows **5 requests per minute and 50 per day** per caller. The 6th
+request within a minute gets `429 rate_limited`, which is also logged. Wait a
+minute and it clears. Limits live in `config.py` (`RATE_LIMIT_PER_MINUTE`,
+`RATE_LIMIT_PER_DAY`).
 
-| Milestone | What you're doing | Where |
+---
+
+## Tests and measurements
+
+Run these with the service running in the other terminal unless noted.
+
+| Command | What it does | Time |
 |---|---|---|
-| 1 | Trace a submission on paper | Nothing to run |
-| 2 | Write your criteria | `criteria.md` — all five are yours |
-| 3 | The route, one signal, the log | `app.py::submit`, `detector.py`, `audit.py` |
-| 4 | Second signal, combine, score | `stylometry.py`, `scoring.py::combine_signals` |
-| 5 | Labels and the appeal path | `scoring.py::score_to_label`, `app.py::appeal` |
-| 6 | Write it up | `README.md` |
+| `python test.py` | Environment check (no server needed) | seconds |
+| `python test_style.py` | Prints both signals on four sample texts (no server needed) | seconds |
+| `python test_formality.py` | Runs the formal-writing check on sample essays (no server needed) | seconds |
+| `python test_appeals.py` | Appeals on real and fake `content_id`s, checks the log | ~1 min |
+| `python measure_cost.py` | Times 10 submissions over 5 mixed texts and prints the average | ~2.5 min |
+| `python run_attacks.py --set attack_set` | Runs the attack set, writes results to `results/` | several min |
+| `python run_attacks.py --flood 15` | Sends 15 quick submissions to show the `429`s | seconds |
+| `python run_eval.py --label <name>` | Runs the five criteria in `criteria.md`, three trials each | several min |
+| `python detector.py "some text"` | Score one text with signal one only | seconds |
+| `python stylometry.py "some text"` | Score one text with signal two only | seconds |
 
-### Unit 8 — the test
-
-| Milestone | What you're doing | Where |
-|---|---|---|
-| 1 | Rate limiting and the full log | `config.py`, the decorator in `app.py` |
-| 2 | Run the attack set | `run_attacks.py` |
-| 3 | Run your own criteria | `scenarios.py`, `run_eval.py` |
-| 4 | Verdicts and diagnoses | `README.md` |
-| 5 | Fix one thing, re-run | `run_attacks.py --label after` |
-| 6 | What's still broken | `README.md` |
+Scripts that submit a lot (`measure_cost.py`, `test_appeals.py`) pace
+themselves or may hit the rate limit; if you see `429`, wait a minute and
+re-run.
 
 ---
 
-## Building `/submit` in three passes
-
-The ordering is deliberate. It's how you tell a broken route from a broken
-signal.
-
-**Milestone 3.** Return a hardcoded response. Confirm `curl` gets it back
-**before** you add any logic. Then pull `text` and `creator_id` out. Then call
-one signal. Then log it.
-
-**Milestone 4.** Add the second signal. Combine them. Log both scores.
-
-**Milestone 5.** Turn the score into a label.
-
-> Test each signal from a terminal on its own before wiring it in. If you skip
-> that you'll spend an hour not knowing whether the route or the signal is
-> lying to you.
-
----
-
-## Turning on rate limiting (unit 8)
-
-Three steps:
-
-1. In `config.py`, set `RATE_LIMITING_ENABLED = True` — or run with
-   `AI201_RATE_LIMITS=1`.
-2. Choose your numbers there.
-3. In `app.py`, uncomment the `@limiter.limit(...)` line above `submit`.
-
-Then push past your limit and watch for `429`:
-
-```bash
-python run_attacks.py --flood 15
-```
-
-That sends 15 submissions from one `creator_id` and prints the run of status
-codes — `200 200 200 ... 429 429` — which is exactly what your README's **Rate
-Limiting** section asks you to paste. It also writes `results/flood_<date>.md`.
-
-The attack set can't do this for you. Every attack row submits under its own
-`creator_id`, so a full attack run looks like forty-odd different callers and
-never trips a limit however long it is.
-
-No `429` at all? Either your limit is above 15 a minute, or rate limiting is
-still off. `GET /health` reports which.
-
-Rejections are logged for you. **An attack that shows up only as an absence is
-one you'll never find** — a thousand requests that got a `429` and left no
-trace look exactly like a quiet afternoon.
-
----
-
-## Running it somewhere else (unit 9)
-
-Unit 9 asks you to deploy one of your systems. **Read this before you pick
-which one** — for this project the answer is already decided, and it isn't the
-hosted one.
-
-Flask's built-in server says "development server" on startup because that's
-what it is. A real one comes from `gunicorn`, which is in
-`requirements.txt` and unused until now:
-
-```bash
-gunicorn app:app --bind 0.0.0.0:$PORT
-```
-
-Two settings do the work, and both read the environment:
-
-| Variable | Default | What it does |
-|---|---|---|
-| `HOST` | `127.0.0.1` | Loopback — your machine only. A host needs `0.0.0.0`, or nothing outside the box can reach the service and it looks like the app is down |
-| `PORT` | `5000` | Most hosts hand you a port in `PORT` and expect you to bind exactly that one |
-| `AI201_DEBUG` | `1` | Debug mode. Off automatically whenever `HOST` isn't loopback — an interactive debugger on a public address is a stranger's Python prompt inside your process |
-
-Nothing about your local workflow changes. With no variables set you get
-`http://127.0.0.1:5000` and every `curl` above still works.
-
-### This project will not fit a free host
-
-Say it plainly, because the arithmetic is the point:
-
-| What has to be in memory | Roughly |
-|---|---|
-| `torch` | ~200–800 MB depending on the build |
-| the `gpt2` weights | ~550 MB on disk, loaded into RAM to score |
-| Flask, gunicorn, your code | the rest |
-| **A free tier gives you** | **512 MB** |
-
-That's over budget before a single request arrives — and a free host has no
-persistent disk, so the 550 MB download starts again after every idle
-spin-down. There is no configuration that fixes this. The model is the size it
-is.
-
-**So pair 4 extensions take Path B — local, with logs.** That is the expected
-answer for this project, not a fallback and not a failure. Working out that a
-system doesn't fit its host *before* you spend an evening watching it get
-killed is the skill unit 9 is actually testing. Write the arithmetic above in
-your write-up; that's the deliverable.
-
----
-
-## Where everything lives
+## Where things live
 
 | File | What it does |
 |---|---|
-| `config.py` | Every setting: thresholds, weights, rate limits, the model |
-| `app.py` | The service. `/ping` and `/log` work; `/submit` and `/appeal` are yours |
-| `detector.py` | Signal one — the local model. Given to you |
-| `stylometry.py` | Signal two. **Stubs — you build these** |
-| `scoring.py` | Combining and labelling. **Stubs — you build these** |
-| `audit.py` | The audit log writer. Given to you |
-| `run_attacks.py` | Runs the attack set — **unit 8** |
-| `run_eval.py` | Runs your criteria three times — **unit 8** |
-| `scenarios.py` | What your test runs. **You fill this in** |
-| `criteria.md` | Your five criteria. **You write all five** |
-| `logs/audit.jsonl` | Your audit log. **Commit it** |
-| `results/` | Attack runs and run logs. **Commit them** |
+| `app.py` | The service and its routes |
+| `config.py` | Every setting: model, signal weights, label thresholds, rate limits |
+| `detector.py` | Signal one — local GPT-2 predictability score |
+| `stylometry.py` | Signal two — sentence-length spread, vocabulary, punctuation |
+| `scoring.py` | Combines the signals and turns the score into a label |
+| `formality.py` | Detects formal writing, which triggers the caution message |
+| `audit.py` | Writes and reads the audit log |
+| `logs/audit.jsonl` | The audit log |
+| `results/` | Attack runs and evaluation results |
+| `criteria.md` | The five criteria the system is evaluated against |
 
 ---
 
-## The two blind spots, up front
+## Known limits
 
-Both signals have one, and unit 8's attack set is built out of them. You have
-to name them yourself in Milestone 1 — but knowing they exist now saves you
-from being surprised.
-
-**Signal one** measures how *predictable* your text is. Predictability isn't
-authorship. What it really rewards is common words in short, ordinary
-sentences — someone writing in a second language and staying with vocabulary
-they're sure of, a younger writer, anyone writing plainly on purpose. Writing
-like that scores about as machine-like as machine writing does. (Dense, ornate
-prose often goes the other way and reads as human, because rare words are what
-a language model fails to predict.) So the writers this signal is most likely
-to accuse are the ones with the least room to argue back. That is the false
-positive the whole project is about, and it's structural rather than a bug.
-
-**Signal two** cannot read. It has no idea what the text says. Anything that
-changes the shape without changing the substance moves it — typos, broken-up
-sentences, a pasted quotation. That is very cheap to do on purpose.
+- **Plain, simple writing can be mistaken for AI.** Signal one rewards predictable text, so writers using common words in short sentences — second-language writers, younger writers — can score like a machine.
+- **Signal two can't read.** Typos, broken-up sentences or a pasted quote move it without changing what the text says.
+- **Formal writing is hard to judge**, which is why it gets a caution and an appeal prompt instead of a confident label.
 
 ---
 
@@ -279,30 +189,14 @@ sentences, a pasted quotation. That is very cheap to do on purpose.
 
 | What you see | What it means |
 |---|---|
-| `501 not_implemented` | Correct at the start — that's the TODO in `app.py` |
-| `404` from curl | Is the server running? Is the path exactly what you typed? |
-| `Cannot bind parameter 'Headers'` | You're in PowerShell, where `curl` is a different tool. Use `curl.exe`, on one line |
-| Request body arrives empty | curl needs `-H "Content-Type: application/json"` |
-| `Address already in use` | A server left running from an earlier attempt. Kill it, don't debug it |
-| The first submission takes 10+ seconds | Signal one is loading the model into memory. Later ones take a second or two |
-| *Every* submission takes 10+ seconds | Something is reloading the model each call. `GET /health` shows `detector_loaded` — if it goes back to `false`, look for a reload in your handler |
+| `curl: (7) Failed to connect` | The service isn't running. Start `python app.py` in the other terminal |
+| `404` from curl | Check the path is exactly `/submit`, `/appeal`, `/log` |
+| `400 too_short` / `413 too_large` | Text must be 50–20,000 characters |
+| `429 rate_limited` | More than 5 submissions in a minute. Wait and retry |
+| `Cannot bind parameter 'Headers'` | You're in PowerShell. Use `curl.exe`, on one line |
+| Request body arrives empty | Add `-H "Content-Type: application/json"` |
+| `Address already in use` | A server from an earlier run is still going. Stop it (Ctrl+C in its terminal, or kill the process) |
+| First submission takes 10+ seconds | Normal — the model is loading. Later ones are fast |
 | `DetectorUnavailable` | Run `python detector.py` once to download the model |
-| `/appeal` seems to do nothing | Does the `content_id` you sent actually exist in the log? A typo there fails silently |
-| Every request gets through, no `429` ever | The decorator is uncommented but limiting is still off. Set `RATE_LIMITING_ENABLED` in `config.py` |
-| Flask-Limiter warns about storage | Shouldn't happen — `storage_uri` is preconfigured. If you changed it, put it back |
-| All three of your labels never appear | Your ranges have a gap. `scoring.label_ranges()` prints them |
-
-If the route won't respond, go back to `/ping`. If that answers, the problem is
-in your handler.
-
----
-
-## A note on committing
-
-At least four new commits in unit 7, four more in unit 8.
-
-`logs/` and `results/` are deliberately **not** in `.gitignore`. Your audit log
-is evidence, and the entries you paste into your README are what unit 8 grades.
-
-**Do not delete and recreate this repository.** You submit the same URL both
-units.
+| `/appeal` returns `404` | That `content_id` isn't in the log — copy it exactly from the submit response |
+| `pip install` fails on `torch` | Check `python --version` is 3.11–3.13 |

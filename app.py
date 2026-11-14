@@ -24,6 +24,7 @@ Routes:
     GET  /health      is the service up, and is the model loaded
 """
 
+import time
 import uuid
 
 from flask import Flask, jsonify, request
@@ -152,6 +153,7 @@ def health():
 
 # Longest text /submit accepts. Anything bigger gets a 413 instead of tying up the model.
 MAX_TEXT_CHARS = 20_000
+MIN_TEXT_CHARS = 50
 
 @app.post("/submit")
 @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
@@ -216,6 +218,9 @@ def submit():
     if not isinstance(text, str) or not text.strip():
         audit.log_rejection(creator_id=creator_id, reason="missing_text")
         return jsonify({"error": "bad_request", "message": "Send JSON with a non-empty \"text\"."}), 400
+    if len(text.strip()) < MIN_TEXT_CHARS:
+        audit.log_rejection(creator_id=creator_id, reason="too_short", length=len(text))
+        return jsonify({"error": "too_short", "message": f"\"text\" must be at least {MIN_TEXT_CHARS} characters."}), 400
     if len(text) > MAX_TEXT_CHARS:
         audit.log_rejection(creator_id=creator_id, reason="too_large", length=len(text))
         return jsonify({"error": "too_large", "message": f"\"text\" must be at most {MAX_TEXT_CHARS} characters."}), 413
@@ -223,24 +228,39 @@ def submit():
     # Step 3 - one real signal that we first tested from the terminal
     # python detector.py "some text"
     # (imported here, like /health does, so the model loads lazily)
-    import detector
-    model_score = detector.model_signal(text)
+    # Capstone M4 - time the run, and log it even if it crashes
+    started = time.perf_counter()
+    try:
+        import detector
+        t = time.perf_counter()
+        model_score = detector.model_signal(text)
+        model_seconds = round(time.perf_counter() - t, 3)
 
-    # Step 5 - second signal
-    import stylometry
-    style_score = stylometry.style_signal(text)
+        # Step 5 - second signal
+        import stylometry
+        style_score = stylometry.style_signal(text)
 
-    # Step 6 - combine
-    import scoring 
-    combined_score = scoring.combine_signals(model_score, style_score)
+        # Step 6 - combine
+        import scoring
+        combined_score = scoring.combine_signals(model_score, style_score)
 
-    # Step 8 - turn the score into a label a reader can understand
-    guess, label = scoring.score_to_label(combined_score)
+        # Step 8 - turn the score into a label a reader can understand
+        guess, label = scoring.score_to_label(combined_score)
 
-    # Capstone - formal-writing caution. Adds a message only; label and scores stay the same.
-    from formality import formal_register
-    is_formal, _ = formal_register(text)
-    caution = scoring.formal_caution(guess, is_formal)
+        # Capstone - formal-writing caution. Adds a message only; label and scores stay the same.
+        from formality import formal_register
+        is_formal, _ = formal_register(text)
+        caution = scoring.formal_caution(guess, is_formal)
+    except Exception as exc:
+        audit.log_rejection(
+            creator_id=creator_id,
+            reason="crashed",
+            error=f"{type(exc).__name__}: {exc}",
+            text_len=len(text),
+            text_preview=text[:80],
+            seconds=round(time.perf_counter() - started, 2),
+        )
+        raise
 
     #Step 4 - log the decision. The content_id is what /appeal needs later
     content_id = f"c_{uuid.uuid4().hex[:12]}"
@@ -255,6 +275,10 @@ def submit():
         label=label,
         status="decided",
         caution=caution,
+        text_len=len(text),
+        text_preview=text[:80],
+        seconds=round(time.perf_counter() - started, 3),
+        model_seconds=model_seconds,
     )
 
     #Step 1 - the route answers

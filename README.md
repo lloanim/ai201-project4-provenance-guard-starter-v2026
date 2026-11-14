@@ -1042,10 +1042,11 @@ The trade I'd make if this ran for real is make fewer wrong accusations, even if
 ## Capstone
 
 **What This Extends**:
-
+Provenance Guard, my unit 7-8 system that labels text as human, unsure, or AI and lets writers appeal. 
+What's new: a formal-writing check (`formality.py`) that adds a caution to `/submit` responses when text reads as formal, a `formal` field in the response and the log, per-run timing (`seconds`, `model_seconds`) in the log, and `measure_cost.py` for measuring cost. 
 
 **The Shape**:
-I chose **Shape C: extending one existing capability**, plus **Path B** for logging. I'm extending the first problem in What's Still Broken: careful, formal human writing (FP03–FP06) gets labeled AI. Instead of changing the scores, I'm adding a formal-writing check (`formality.py`) that recognizes formal writing (almost no contractions and no casual words like "gonna" or "lol") and tells the user about it in `/submit`. If the text is labeled `high-confidence AI`, the response says it reads as formal writing, which the detector can't judge well, so the writer can appeal. If it's labeled `unsure`, the response says it reads as formal writing and the detector can't determine it well. A `human` label gets no message. For Path B, each decision's log entry records latency, tokens, memory, outcome and a new `formal` field, so the log shows how often the check fires.
+I chose **Shape C: extending one existing capability**. I'm extending the first problem in What's Still Broken: careful, formal human writing (FP03–FP06) gets labeled AI. Instead of changing the scores, I'm adding a formal-writing check (`formality.py`) that recognizes formal writing (almost no contractions and no casual words like "gonna" or "lol") and tells the user about it in `/submit`. If the text is labeled `high-confidence AI`, the response says it reads as formal writing, which the detector can't judge well, so the writer can appeal. If it's labeled `unsure`, the response says it reads as formal writing and the detector can't determine it well. A `human` label gets no message. The log entry for each decision now records the `formal` flag and timing, so the log shows how often the check fires and what each run costs.
 
 *Out of Scope*:
 - **I'm not rebuilding either signal.** The model signal and the style signal stay as they are. The formal check sits next to them.
@@ -1054,12 +1055,73 @@ I chose **Shape C: extending one existing capability**, plus **Path B** for logg
 
 **Running It**:
 
+Path B: local, with logs. The system runs on my laptop and isn't deployed. The GPT-2 model plus `torch` needs well over a free host's 512 MB of RAM, and a free host has no persistent disk, so the 550 MB model would download again after every restart. The audit log in `logs/audit.jsonl` is the evidence of it running. Setup, commands and troubleshooting are in [RUNNING.md](RUNNING.md).
 
 **Instrumentation**:
 
+Log 0: Model Load
+```json
+{"timestamp": "2026-11-14T16:01:08+00:00", "content_id": "c_bb50213e761d", "creator_id": "cost_measure", "guess": "human", "model_score": 0.3001, "style_score": 0.65, "combined_score": 0.40507, "label": "We think this was probably written by a person.", "status": "decided", "formal": false, "caution": "", "text_len": 69, "text_preview": "Can't believe the bus was late again. Third time this week, honestly.", "seconds": 16.072, "model_seconds": 16.05}
+```
+
+Log 1:
+```json
+{"timestamp": "2026-11-14T16:01:21+00:00", "content_id": "c_d50220cf551a", "creator_id": "cost_measure", "guess": "human", "model_score": 0.3001, "style_score": 0.65, "combined_score": 0.40507, "label": "We think this was probably written by a person.", "status": "decided", "formal": false, "caution": "", "text_len": 69, "text_preview": "Can't believe the bus was late again. Third time this week, honestly.", "seconds": 0.109, "model_seconds": 0.108}
+```
+
+Log 2:
+```json
+{"timestamp": "2026-11-14T16:01:34+00:00", "content_id": "c_0ccb5996d0d6", "creator_id": "cost_measure", "guess": "unsure", "model_score": 0.632, "style_score": 0.788888888888889, "combined_score": 0.6790666666666667, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 284, "text_preview": "I spent most of Saturday trying to fix the bike chain that kept slipping. First ", "seconds": 0.136, "model_seconds": 0.136}
+```
+
+Log 3:
+```json
+{"timestamp": "2026-11-14T16:01:47+00:00", "content_id": "c_a4420e811b50", "creator_id": "cost_measure", "guess": "unsure", "model_score": 0.6621, "style_score": 0.8297297297297297, "combined_score": 0.7123889189189189, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 243, "text_preview": "The committee has reviewed the proposal and concludes that the projected budget ", "seconds": 0.089, "model_seconds": 0.089}
+```
+
+Log 4:
+```json
+{"timestamp": "2026-11-14T16:02:01+00:00", "content_id": "c_a9d276cd36dd", "creator_id": "cost_measure", "guess": "unsure", "model_score": 0.8656, "style_score": 0.45, "combined_score": 0.74092, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 290, "text_preview": "In today's fast-paced world, effective time management is more important than ev", "seconds": 0.125, "model_seconds": 0.125}
+```
+
+Log 5:
+```json
+{"timestamp": "2026-11-14T16:02:14+00:00", "content_id": "c_db723e9b2f1a", "creator_id": "cost_measure", "guess": "ai", "model_score": 0.9769, "style_score": 0.663477727208007, "combined_score": 0.882873318162402, "label": "We think this was probably written with AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks have trouble judging. If you wrote it yourself, you can appeal.", "text_len": 1034, "text_preview": "Our community garden started three years ago with six plots and a borrowed hose.", "seconds": 0.403, "model_seconds": 0.402}
+```
+
+Log 6:
+```json
+{"timestamp": "2026-11-14T16:02:27+00:00", "content_id": "c_6c12dee0f2aa", "creator_id": "cost_measure", "guess": "human", "model_score": 0.3001, "style_score": 0.65, "combined_score": 0.40507, "label": "We think this was probably written by a person.", "status": "decided", "formal": false, "caution": "", "text_len": 69, "text_preview": "Can't believe the bus was late again. Third time this week, honestly.", "seconds": 0.061, "model_seconds": 0.061}
+```
+
+Log 7:
+```json
+{"timestamp": "2026-11-14T16:02:40+00:00", "content_id": "c_559ff7356e04", "creator_id": "cost_measure", "guess": "unsure", "model_score": 0.632, "style_score": 0.788888888888889, "combined_score": 0.6790666666666667, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 284, "text_preview": "I spent most of Saturday trying to fix the bike chain that kept slipping. First ", "seconds": 0.127, "model_seconds": 0.127}
+```
+
+Log 8:
+```json
+{"timestamp": "2026-11-14T16:02:53+00:00", "content_id": "c_ef3e66f24a57", "creator_id": "cost_measure", "guess": "unsure", "model_score": 0.6621, "style_score": 0.8297297297297297, "combined_score": 0.7123889189189189, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 243, "text_preview": "The committee has reviewed the proposal and concludes that the projected budget ", "seconds": 0.104, "model_seconds": 0.104}
+```
+
+Log 9:
+```json
+{"timestamp": "2026-11-14T16:03:06+00:00", "content_id": "c_8bb1ef4b8db0", "creator_id": "cost_measure", "guess": "unsure", "model_score": 0.8656, "style_score": 0.45, "combined_score": 0.74092, "label": "We can't tell whether this was written by a person or by AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks can't judge well.", "text_len": 290, "text_preview": "In today's fast-paced world, effective time management is more important than ev", "seconds": 0.116, "model_seconds": 0.115}
+```
+
+Log 10:
+```json
+{"timestamp": "2026-11-14T16:03:20+00:00", "content_id": "c_83f3a855ce5c", "creator_id": "cost_measure", "guess": "ai", "model_score": 0.9769, "style_score": 0.663477727208007, "combined_score": 0.882873318162402, "label": "We think this was probably written with AI.", "status": "decided", "formal": true, "caution": "This reads as careful, formal writing, which our checks have trouble judging. If you wrote it yourself, you can appeal.", "text_len": 1034, "text_preview": "Our community garden started three years ago with six plots and a borrowed hose.", "seconds": 0.37, "model_seconds": 0.369}
+```
+
+Failed Run: I sent a 3 character text to `/submit`. The server returned 400 `too_short` and logged the rejection instead of running the detector
+```json
+{"timestamp": "2026-11-14T15:42:56+00:00", "creator_id": "m3_test", "event": "rejected", "status": "rejected", "reason": "too_short", "length": 3}
+```
+
 
 **What It Costs**:
-
+For this project there is no API used, so instead the cost is seconds of local compute. Each `/submit` is timed on the server with `time.perf_counter()` and logged as `seconds` (whole request) and `model_seconds` (the detector). I ran `measure_cost.py`: one warm-up call, then 10 timed runs cycling through 5 texts of 12-171 words. Average: 0.164s per run (min: 0.061, max: 0.403), and the detector took essentially all of it. The first call after the startup took 16.07s because the model loads first, that's a one time startup cost, so it's not in the average. Longer text costs more: about 0.39s at 171 words vs. 0.06-0.14s under 55 words. 
 
 **Run Log and Verdicts**:
 
@@ -1071,6 +1133,22 @@ I chose **Shape C: extending one existing capability**, plus **Path B** for logg
 
 
 **How I Used AI**:
+
+*Moment 1*
+
+- What I asked for:
+
+- What came back:
+
+- What I changed:
+
+*Moment 2*
+
+- What I asked for:
+
+- What came back:
+
+- What I changed:
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
