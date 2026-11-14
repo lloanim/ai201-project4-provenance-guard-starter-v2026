@@ -92,6 +92,17 @@ def score_to_label(score: float) -> tuple[str, str]:
         return "human", "We think this was probably written by a person."
     return "unsure", "We can't tell whether this was written by a person or by AI."
 
+def formal_caution(guess: str, is_formal: bool) -> str:
+    """Adds a note for formal text on unsure/AI labels. Never changes the label."""
+    if not is_formal:
+        return ""
+    if guess == "ai":
+        return ("This reads as careful, formal writing, which our checks have "
+                "trouble judging. If you wrote it yourself, you can appeal.")
+    if guess == "unsure":
+        return ("This reads as careful, formal writing, which our checks "
+                "can't judge well.")
+    return ""
 
 def label_ranges() -> list[tuple[str, str]]:
     """

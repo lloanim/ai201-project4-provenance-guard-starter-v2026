@@ -237,6 +237,11 @@ def submit():
     # Step 8 - turn the score into a label a reader can understand
     guess, label = scoring.score_to_label(combined_score)
 
+    # Capstone - formal-writing caution. Adds a message only; label and scores stay the same.
+    from formality import formal_register
+    is_formal, _ = formal_register(text)
+    caution = scoring.formal_caution(guess, is_formal)
+
     #Step 4 - log the decision. The content_id is what /appeal needs later
     content_id = f"c_{uuid.uuid4().hex[:12]}"
     audit.log_decision(
@@ -259,6 +264,8 @@ def submit():
         "label": label,
         "model_score": model_score,
         "style_score": style_score,
+        "formal": is_formal,
+        "caution": caution,
     }), 200
 
  
