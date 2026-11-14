@@ -248,11 +248,13 @@ def submit():
         content_id=content_id,
         creator_id=creator_id,
         guess=guess,
+        formal=is_formal,
         model_score=model_score,
         style_score=style_score,
         combined_score=combined_score,
         label=label,
         status="decided",
+        caution=caution,
     )
 
     #Step 1 - the route answers

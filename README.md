@@ -108,8 +108,8 @@ I worded "unsure" to state plainly that the tool can't decide, and to make clear
 
 Clearly-Human Text:
 ```bash
-$ curl -X POST http://127.0.0.1:5000/submit \
-  -H "Content-Type: application/json" \
+$ curl -X POST http://127.0.0.1:5000/submit 
+  -H "Content-Type: application/json" 
   -d '{"text": "I didn'\''t sleep. Not properly, anyway — I lay there listening to the boiler tick and thinking about the thing I'\''d said to Marcus at the pub, which was stupid, and which he will absolutely bring up again. Twice now. So: coffee, and the long way round to work, and a plan. The plan lasted until about ten past nine, when Priya asked how the weekend was and I said \"fine\" in the voice that means it wasn'\''t, and she put her mug down and looked at me. That'\''s the trouble with Priya. She notices.", "creator_id": "u1"}'
 ```
 
@@ -141,8 +141,8 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 
 Clearly-AI Text:
 ```bash
-$ curl -X POST http://127.0.0.1:5000/submit \
-  -H "Content-Type: application/json" \
+$ curl -X POST http://127.0.0.1:5000/submit 
+  -H "Content-Type: application/json" 
   -d '{"text": "The importance of effective time management cannot be overstated in today'\''s fast-paced work environment. Professionals who develop strong organizational habits are better positioned to meet deadlines and reduce stress. There are several key strategies that can help individuals improve their productivity. First, prioritization is essential. By identifying the most important tasks and addressing them first, workers can ensure that critical objectives are met. Second, minimizing distractions plays a significant role. Setting aside dedicated blocks of time for concentrated work is widely considered beneficial. Finally, regular breaks are important for maintaining performance.", "creator_id": "u2"}'
 ```
 
@@ -175,8 +175,8 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 **An appeal**
 
 ```bash
-$ curl -X POST http://127.0.0.1:5000/appeal \
-  -H "Content-Type: application/json" \
+$ curl -X POST http://127.0.0.1:5000/appeal 
+  -H "Content-Type: application/json" 
   -d '{"content_id": "c_6c3ed9d8f66c", "reasoning": "I wrote this myself for my class."}'
 ```
 
