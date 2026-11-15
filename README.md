@@ -1121,7 +1121,8 @@ Failed Run: I sent a 3 character text to `/submit`. The server returned 400 `too
 
 
 **What It Costs**:
-For this project there is no API used, so instead the cost is seconds of local compute. Each `/submit` is timed on the server with `time.perf_counter()` and logged as `seconds` (whole request) and `model_seconds` (the detector). I ran `measure_cost.py`: one warm-up call, then 10 timed runs cycling through 5 texts of 12-171 words. Average: 0.164s per run (min: 0.061, max: 0.403), and the detector took essentially all of it. The first call after the startup took 16.07s because the model loads first, that's a one time startup cost, so it's not in the average. Longer text costs more: about 0.39s at 171 words vs. 0.06-0.14s under 55 words. 
+For this project there is no API used, so instead the cost is seconds of local compute. Each `/submit` is timed on the server with `time.perf_counter()` and logged as `seconds` (whole request) and `model_seconds` (the detector). I ran `measure_cost.py`: one warm-up call, then 10 timed runs cycling through 5 texts of 12-171 words. Average: 0.164s per run (min: 0.061, max: 0.403), and the detector took essentially all of it. The first call after startup took 16.07s because the model loads first. That's a one-time startup cost, so it's not in the average. Longer text costs more: about 0.39s at 171 words vs. 0.06-0.14s under 55 words. 
+For 100 people a day (one submission each), that's 0.164s × 100 + 16.07s ≈ 32.5s of local compute and $0 in API spend. Breaking that down: 0.164s × 100 = 16.4s of compute, plus one 16.07s model load per server start, so 16.4s + 16.07s ≈ 32.5s a day. If every submission were long (~0.39s): 0.39s × 100 = 39s + 16.07s ≈ 55s a day. API spend stays $0, since nothing calls a paid service. The real limit at scale would be memory (the model needs over 512 MB of RAM to stay loaded), not compute time. 
 
 **Run Log and Verdicts**:
 
@@ -2425,24 +2426,37 @@ Trial 1 -
 
 **What's Still Broken**:
 
+**Criterion 2 (formal human pieces: 7/10, target ≥ 9):** The all-caps rule in `formality.py` treats any word of three or more capital letters as shouting, so formal essays with acronyms or institution names ("NASA", "ACM", "THE MET") get marked casual and miss the caution. What I'd do is only count all-caps words as casual when there are several in a row or when they're mixed with other casual markers, or skip known acronym patterns (short all-caps words, or ones inside a proper name). I stopped because the project says to fix one diagnosis, and I used mine on Criterion 3.
+
+**The tradeoff from my fix:** Requiring a transition phrase means a short formal paragraph without "however" or "for example" no longer gets the caution, even if it's clearly formal. I also tuned the rule on only 20 texts (10 formal, 10 casual), so the 9 of 10 vs. 0 of 10 split may not hold on a larger or more varied set.
+
+**The underlying false positives:** The formal-writing check only adds a caution, it doesn't change the score. Formal human writing (FP03–FP06) can still be labeled "probably AI." The user now gets told why and can appeal, but the label itself is still wrong.
+
+If I had another unit, I would use the formality check to adjust the actual score, so formal writing by a human is more likely to land in "unsure" or "human" instead of "probably AI." I'd do this first because falsely labeling a real person's careful writing as AI is the biggest harm still left in the system, and right now the caution only explains that wrong label instead of preventing it.
 
 **How I Used AI**:
 
 *Moment 1*
 
-- What I asked for:
+- What I asked for: 
+  I asked Claude whether a different person could test my criteria without having to ask me what I meant.
 
 - What came back:
+  It said Criteria 2 and 3 needed work because they didn't define what makes a text count as formal or casual. It also said I should name where the sample pieces would be stored.
 
 - What I changed:
+  I first added the file location for the sample pieces. Instead of listing markers in the criteria, I defined formal and casual by the labeled sample sets in `scenarios.py`: the "formal human pieces" (Criterion 2) and "casual human pieces" (Criterion 3). This way, someone else can check each criterion against the same fixed set of texts without having to decide on their own what counts as formal or casual.
 
 *Moment 2*
 
-- What I asked for:
+- What I asked for: 
+  I asked Claude to help me narrow down which extension to add to this project.
 
 - What came back:
+  I originally wanted to do Shape B (hardening against failure). Claude pointed out that Shape C might be a better fit, because it would address the system's biggest weakness: it can't reliably tell formal human writing apart from AI writing.
 
 - What I changed:
+  I switched to Shape C and added a formality check. When a text is flagged as formal, the system adds a caution that explains what the user can do. If the label is "AI" the caution says the system isn't fully sure. If the label is "unsure," it tells the user they can appeal.
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
