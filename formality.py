@@ -35,8 +35,12 @@ def formal_register(text: str) -> tuple[bool, str]:
               or STRETCHED.search(lower) is not None
               or ALL_CAPS.search(text) is not None)
 
-    # Transitions are reported but not required: short essay paragraphs often have none.
-    is_formal = contraction_rate <= config.FORMAL_MAX_CONTRACTION_RATE and not casual
+    # At least one transition is required: plain casual writing has no casual markers either,
+    # so "no casual markers" alone let it pass as formal. Tradeoff: short formal paragraphs
+    # with no transitions now go unflagged.
+    is_formal = (contraction_rate <= config.FORMAL_MAX_CONTRACTION_RATE
+                 and not casual
+                 and transitions >= 1)
     reason = (f"Formal register: {contraction_rate:.1%} contractions, no casual words, "
               f"{transitions} transition phrases" if is_formal else "")
     
